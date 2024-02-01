@@ -31,8 +31,10 @@
   <Paper>
     <div id="post-info">
       <div>
-        <Text>{author.name} em {date}</Text>
+        <Text><a href={`/profile/${author.id}/`}>{author.name}</a> em {date}</Text>
+        <br />
         <Text>{content}</Text>
+        <br />
       </div>
       {#if userId === author.id}
         <div id="actions">
@@ -57,5 +59,11 @@
     display: flex;
     justify-content: space-between;
     gap: 10px;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
 </style>
