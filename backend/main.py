@@ -180,6 +180,21 @@ def create_post(req_data: PostBase, db: db_dependency, authorization: str = Head
     db.commit()
 
 
+@app.put('/edit-post/{post_id}/')
+def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [req_data.author])
+    db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if db_post:
+        db_post.content = req_data.content
+        db.commit()
+
+
+@app.get('/post/{post_id}/')
+def get_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
+    db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    return db_post
+
+
 @app.get('/posts/{user_id}/')
 def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
