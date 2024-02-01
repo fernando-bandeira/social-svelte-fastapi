@@ -187,7 +187,10 @@ def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = He
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     response_payload = [{
         'id': post.id,
-        'author': db_user.name,
+        'author': {
+            'id': db_user.id,
+            'name': db_user.name,
+        },
         'content': post.content,
         'date': post.date
     } for post in db_posts]

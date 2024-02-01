@@ -1,5 +1,5 @@
 <script>
-  import { Paper, Text, Checkbox } from "@svelteuidev/core";
+  import { Paper, Text, Checkbox, Button } from "@svelteuidev/core";
   import api from "../utils/api";
   import { onMount } from "svelte";
 
@@ -27,8 +27,35 @@
   };
 </script>
 
-<Paper>
-  <Text>{author} em {date}</Text>
-  <Text>{content}</Text>
-  <Checkbox checked={liked} on:input={handleLike} />
-</Paper>
+<div id="container">
+  <Paper>
+    <div id="post-info">
+      <div>
+        <Text>{author.name} em {date}</Text>
+        <Text>{content}</Text>
+      </div>
+      {#if userId === author.id}
+        <div id="actions">
+          <Button>Editar</Button>
+          <Button color="red">Excluir</Button>
+        </div>
+      {/if}
+    </div>
+    <Checkbox checked={liked} on:input={handleLike} />
+  </Paper>
+</div>
+
+<style>
+  #container {
+    margin: 15px 0 15px 0;
+  }
+  #post-info {
+    display: flex;
+    justify-content: space-between;
+  }
+  #actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+</style>

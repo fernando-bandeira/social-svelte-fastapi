@@ -3,6 +3,7 @@
   import { TextInput, Modal, Button, Paper } from "@svelteuidev/core";
   import api from "../utils/api";
   import { MagnifyingGlass } from "radix-icons-svelte";
+  import { goto } from "$app/navigation";
 
   export let userId;
 
@@ -78,7 +79,9 @@
   {/if}
 </Modal>
 <nav id="navbar">
-  <Button on:click={() => (window.location = "/")}>Home</Button>
+  <a href="/">
+    <img src="/logo.png" alt="Logo" height="40" />
+  </a>
   <div id="navbar-actions">
     <TextInput
       readonly
@@ -86,6 +89,7 @@
       icon={MagnifyingGlass}
       placeholder="Buscar usuários"
     />
+    <Button on:click={() => goto(`/profile/${userId}/`)}>Perfil</Button>
     <Button on:click={() => (followRequestsModalOpened = true)}>
       Solicitações
     </Button>
@@ -97,9 +101,10 @@
   #navbar {
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px solid #CCC;
-    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
     margin-bottom: 10px;
+    background-color: #fff;
   }
   #navbar-actions {
     display: flex;

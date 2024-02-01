@@ -2,7 +2,7 @@
   import AuthWrapper from "../../../utils/AuthWrapper.svelte";
   import { userContext } from "../../../stores/userContext.js";
   import api from "../../../utils/api";
-  import { Button } from "@svelteuidev/core";
+  import { Button, Title, Paper } from "@svelteuidev/core";
   import Header from "../../../components/Header.svelte";
   import Post from "../../../components/Post.svelte";
 
@@ -49,29 +49,47 @@
 <AuthWrapper>
   <Header userId={user?.id} />
   {#if !loading}
-    <div>
-      <h1>Perfil de {profileData.name}</h1>
-      {#if relationData?.approved}
-        <Button color="red" on:click={unfollow}>Parar de seguir</Button>
-      {:else if relationData?.requested}
-        <Button color="red" on:click={unfollow}>Cancelar solicitação</Button>
-      {:else}
-        <Button on:click={follow}>Seguir</Button>
-      {/if}
-      <hr />
-      {#if relationData?.approved}
-        {#each posts as post}
-          <Post
-            id={post.id}
-            userId={user?.id}
-            author={post.author}
-            content={post.content}
-            date={post.date}
-          />
-        {/each}
-      {:else}
-        Você não segue esse usuário.
-      {/if}
+    <div id="box">
+      <Paper>
+        <div id="title-action">
+          <Title>Perfil de {profileData.name}</Title>
+          {#if relationData?.approved}
+            <Button color="red" on:click={unfollow}>Parar de seguir</Button>
+          {:else if relationData?.requested}
+            <Button color="red" on:click={unfollow}>Cancelar solicitação</Button
+            >
+          {:else}
+            <Button on:click={follow}>Seguir</Button>
+          {/if}
+        </div>
+        <hr />
+        {#if relationData?.approved}
+          {#each posts as post}
+            <Post
+              id={post.id}
+              userId={user?.id}
+              author={post.author}
+              content={post.content}
+              date={post.date}
+            />
+          {/each}
+        {:else}
+          Você não segue esse usuário.
+        {/if}
+      </Paper>
     </div>
   {/if}
 </AuthWrapper>
+
+<style>
+  #box {
+    width: 900px;
+    margin: 0 auto;
+  }
+  #title-action {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+</style>
