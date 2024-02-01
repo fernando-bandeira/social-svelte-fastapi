@@ -26,7 +26,7 @@
       profileData = resProfile.data;
       const resRelation = await api.get(`/${user.id}/follows/${profileId}/`);
       relationData = resRelation.data;
-      if (relationData?.approved || user.id === profileId) {
+      if (relationData?.approved || user.id === profileId || profileData.public) {
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
@@ -67,7 +67,7 @@
           {/if}
         </div>
         <hr />
-        {#if relationData?.approved || user.id === profileId}
+        {#if relationData?.approved || user.id === profileId || profileData.public}
           {#each posts as post}
             <Post
               id={post.id}

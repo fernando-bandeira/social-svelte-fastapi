@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import desc
+from sqlalchemy import desc, not_
 
 origins = [
     'http://localhost:5173',
@@ -201,7 +201,8 @@ def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = He
 def search_users(name: str, db: db_dependency, authorization: str = Header(None)):
     payload = verify_authorization(authorization)
     users = db.query(models.User).filter(
-        (models.User.name.contains(name)) & (models.User.id != payload['user_id'])
+        models.User.name.contains(name),
+        models.User.id != payload['user_id']
     ).all()
     return users
 
@@ -216,7 +217,8 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
 @app.get('/{user_1}/follows/{user_2}/')
 def check_relation(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
     result = db.query(models.FollowRelation).filter(
-        (models.FollowRelation.requester == user_1) & (models.FollowRelation.approver == user_2)
+        models.FollowRelation.requester == user_1,
+        models.FollowRelation.approver == user_2
     ).first()
     requested = result is not None
     approved = result.approved if requested else False
@@ -229,7 +231,8 @@ def check_relation(user_1: int, user_2: int, db: db_dependency, authorization: s
 @app.post('/{user_1}/follows/{user_2}/')
 def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
     # verify_authorization(authorization, [user_1])
-    db_follow = models.FollowRelation(requester=user_1, approver=user_2, approved=False)
+    db_approver = db.query(models.User).filter(models.User.id == user_2).first()
+    db_follow = models.FollowRelation(requester=user_1, approver=user_2, approved=db_approver.public)
     db.add(db_follow)
     db.commit()
 
@@ -238,7 +241,8 @@ def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Hea
 def unfollow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
     # verify_authorization(authorization, [user_1, user_2])
     result = db.query(models.FollowRelation).filter(
-        (models.FollowRelation.requester == user_1) & (models.FollowRelation.approver == user_2)
+        models.FollowRelation.requester == user_1,
+        models.FollowRelation.approver == user_2
     ).first()
     if result:
         db.delete(result)
@@ -249,7 +253,8 @@ def unfollow(user_1: int, user_2: int, db: db_dependency, authorization: str = H
 def approve(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
     # verify_authorization(authorization, [user_1])
     db_relation = db.query(models.FollowRelation).filter(
-        (models.FollowRelation.approver == user_1) & (models.FollowRelation.requester == user_2)
+        models.FollowRelation.approver == user_1,
+        models.FollowRelation.requester == user_2
     ).first()
     if db_relation:
         db_relation.approved = True
@@ -259,7 +264,8 @@ def approve(user_1: int, user_2: int, db: db_dependency, authorization: str = He
 @app.get('/requests/{user_id}/')
 def get_requests(user_id: int, db: db_dependency, authorization: str = Header(None)):
     db_requests = db.query(models.FollowRelation).filter(
-        (models.FollowRelation.approver == user_id) & ~(models.FollowRelation.approved)
+        models.FollowRelation.approver == user_id,
+        not_(models.FollowRelation.approved)
     ).all()
     response_payload = []
     for request in db_requests:
@@ -275,7 +281,8 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
 @app.get('/{user_id}/likes/{post_id}/')
 def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_like = db.query(models.PostLike).filter(
-        (models.PostLike.user == user_id) & (models.PostLike.post == post_id)
+        models.PostLike.user == user_id,
+        models.PostLike.post == post_id
     ).first()
     return {
         'like': db_like is not None
@@ -292,8 +299,35 @@ def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str 
 @app.delete('/{user_id}/likes/{post_id}/')
 def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_like = db.query(models.PostLike).filter(
-        (models.PostLike.user == user_id) & (models.PostLike.post == post_id)
+        models.PostLike.user == user_id,
+        models.PostLike.post == post_id
     ).first()
     if db_like:
         db.delete(db_like)
         db.commit()
+
+
+@app.get('/feed/{user_id}')
+def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    followed_users_posts = db.query(models.Post).join(
+        models.FollowRelation,
+        models.Post.author == models.FollowRelation.approver
+    ).filter(
+        models.FollowRelation.requester == user_id,
+        models.FollowRelation.approved
+    ).order_by(desc(models.Post.date)).all()
+
+    response_payload = []
+    for post in followed_users_posts:
+        db_user = db.query(models.User).filter(models.User.id == post.author).first()
+        response_payload.append({
+            'id': post.id,
+            'author': {
+                'id': db_user.id,
+                'name': db_user.name,
+            },
+            'content': post.content,
+            'date': post.date
+        })
+
+    return response_payload

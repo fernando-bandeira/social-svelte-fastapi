@@ -14,7 +14,7 @@
   let posts = [];
   const fetchData = async () => {
     if (user?.id) {
-      const res = await api.get(`/posts/${user.id}/`);
+      const res = await api.get(`/feed/${user.id}/`);
       posts = res.data;
     }
   };
@@ -28,8 +28,7 @@
       date: new Date().toLocaleString("en-GB"),
     });
     post = "";
-    const res = await api.get(`/posts/${user.id}/`);
-    posts = res.data;
+    fetchData();
   };
 </script>
 
