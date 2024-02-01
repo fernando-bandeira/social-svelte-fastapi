@@ -3,7 +3,8 @@
   import { userContext } from "../../../stores/userContext.js";
   import api from "../../../utils/api";
   import { Button } from "@svelteuidev/core";
-    import Header from "../../../components/Header.svelte";
+  import Header from "../../../components/Header.svelte";
+  import Post from "../../../components/Post.svelte";
 
   export let data;
   const profileId = data.slug;
@@ -35,7 +36,6 @@
   $: user, fetchData();
 
   const follow = async () => {
-    console.log("oi");
     await api.post(`/${user.id}/follows/${profileId}/`);
     fetchData();
   };
@@ -52,16 +52,22 @@
     <div>
       <h1>Perfil de {profileData.name}</h1>
       {#if relationData?.approved}
-        Seguindo | <Button on:click={unfollow}>Parar de seguir</Button>
+        <Button color="red" on:click={unfollow}>Parar de seguir</Button>
       {:else if relationData?.requested}
-        Solicitado | <Button on:click={unfollow}>Cancelar solicitação</Button>
+        <Button color="red" on:click={unfollow}>Cancelar solicitação</Button>
       {:else}
         <Button on:click={follow}>Seguir</Button>
       {/if}
       <hr />
       {#if relationData?.approved}
         {#each posts as post}
-          <li>{post.content}</li>
+          <Post
+            id={post.id}
+            userId={user?.id}
+            author={post.author}
+            content={post.content}
+            date={post.date}
+          />
         {/each}
       {:else}
         Você não segue esse usuário.

@@ -25,6 +25,7 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     author = Column(Integer, ForeignKey('users.id'), index=True)
     content = Column(String, index=True)
+    date = Column(String, index=True)
 
 
 class FollowRelation(Base):
@@ -34,3 +35,11 @@ class FollowRelation(Base):
     requester = Column(Integer, ForeignKey('users.id'), index=True)
     approver = Column(Integer, ForeignKey('users.id'), index=True)
     approved = Column(Boolean, default=False)
+
+
+class PostLike(Base):
+    __tablename__ = 'likes'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user = Column(Integer, ForeignKey('users.id'), index=True)
+    post = Column(Integer, ForeignKey('posts.id'), index=True)

@@ -90,6 +90,7 @@ class LogoutBase(BaseModel):
 class PostBase(BaseModel):
     author: int
     content: str
+    date: str
 
 
 def get_db():
@@ -174,7 +175,7 @@ def logout(req_data: LogoutBase, db: db_dependency):
 @app.post('/create-post/')
 def create_post(req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
-    db_post = models.Post(content=req_data.content, author=req_data.author)
+    db_post = models.Post(content=req_data.content, author=req_data.author, date=req_data.date)
     db.add(db_post)
     db.commit()
 
@@ -183,7 +184,14 @@ def create_post(req_data: PostBase, db: db_dependency, authorization: str = Head
 def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     db_posts = db.query(models.Post).filter(models.Post.author == user_id).order_by(desc(models.Post.id)).all()
-    return db_posts
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    response_payload = [{
+        'id': post.id,
+        'author': db_user.name,
+        'content': post.content,
+        'date': post.date
+    } for post in db_posts]
+    return response_payload
 
 
 @app.get('/users/')
@@ -259,3 +267,30 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
             'requester_name': requester_name
         })
     return response_payload
+
+
+@app.get('/{user_id}/likes/{post_id}/')
+def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    db_like = db.query(models.PostLike).filter(
+        (models.PostLike.user == user_id) & (models.PostLike.post == post_id)
+    ).first()
+    return {
+        'like': db_like is not None
+    }
+
+
+@app.post('/{user_id}/likes/{post_id}/')
+def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    db_like = models.PostLike(user=user_id, post=post_id)
+    db.add(db_like)
+    db.commit()
+
+
+@app.delete('/{user_id}/likes/{post_id}/')
+def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    db_like = db.query(models.PostLike).filter(
+        (models.PostLike.user == user_id) & (models.PostLike.post == post_id)
+    ).first()
+    if db_like:
+        db.delete(db_like)
+        db.commit()

@@ -4,6 +4,8 @@
   import { userContext } from "../stores/userContext";
   import { Button, Textarea } from "@svelteuidev/core";
   import Header from "../components/Header.svelte";
+  import StandardPage from "../components/StandardPage.svelte";
+  import Post from "../components/Post.svelte";
 
   let user;
   userContext.subscribe((value) => {
@@ -24,6 +26,7 @@
     await api.post("/create-post/", {
       content: post,
       author: user.id,
+      date: new Date().toLocaleString("en-GB"),
     });
     post = "";
     const res = await api.get(`/posts/${user.id}/`);
@@ -41,7 +44,13 @@
   <hr />
   <ul>
     {#each posts as post}
-      <li>{post.content}</li>
+      <Post
+        id={post.id}
+        userId={user?.id}
+        author={post.author}
+        content={post.content}
+        date={post.date}
+      />
     {/each}
   </ul>
 </AuthWrapper>

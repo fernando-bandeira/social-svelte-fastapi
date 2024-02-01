@@ -36,72 +36,70 @@
   };
 </script>
 
-<div>
-  <Modal
-    opened={searchUsersModalOpened}
-    on:close={() => (searchUsersModalOpened = false)}
-    title="Buscar usuários"
-    target="body"
-  >
+<Modal
+  opened={searchUsersModalOpened}
+  on:close={() => (searchUsersModalOpened = false)}
+  title="Buscar usuários"
+  target="body"
+>
+  <TextInput
+    on:input={(e) => searchUsers(e.target.value)}
+    icon={MagnifyingGlass}
+    placeholder="Buscar usuários"
+  />
+  <div id="users-list">
+    {#each users as user}
+      <Paper><a href={`/profile/${user.id}`}>{user.name}</a></Paper>
+    {/each}
+  </div>
+</Modal>
+<Modal
+  opened={followRequestsModalOpened}
+  on:close={() => (followRequestsModalOpened = false)}
+  title="Follow Requests"
+  target="body"
+>
+  {#if followRequests.length > 0}
+    {#each followRequests as request}
+      <Paper>
+        <div class="request-card">
+          {request.requester_name}
+          <div class="request-actions">
+            <Button on:click={() => approve(request.requester)}>Aprovar</Button>
+            <Button color="red" on:click={() => unfollow(request.requester)}
+              >Recusar</Button
+            >
+          </div>
+        </div>
+      </Paper>
+    {/each}
+  {:else}
+    Sem solicitações
+  {/if}
+</Modal>
+<nav id="navbar">
+  <Button on:click={() => (window.location = "/")}>Home</Button>
+  <div id="navbar-actions">
     <TextInput
-      on:input={(e) => searchUsers(e.target.value)}
+      readonly
+      on:click={() => (searchUsersModalOpened = true)}
       icon={MagnifyingGlass}
       placeholder="Buscar usuários"
     />
-    <div id="users-list">
-      {#each users as user}
-        <Paper><a href={`/profile/${user.id}`}>{user.name}</a></Paper>
-      {/each}
-    </div>
-  </Modal>
-  <Modal
-    opened={followRequestsModalOpened}
-    on:close={() => (followRequestsModalOpened = false)}
-    title="Follow Requests"
-    target="body"
-  >
-    {#if followRequests.length > 0}
-      {#each followRequests as request}
-        <Paper>
-          <div class="request-card">
-            {request.requester_name}
-            <div class="request-actions">
-              <Button on:click={() => approve(request.requester)}
-                >Aprovar</Button
-              >
-              <Button color="red" on:click={() => unfollow(request.requester)}
-                >Recusar</Button
-              >
-            </div>
-          </div>
-        </Paper>
-      {/each}
-    {:else}
-      Sem solicitações
-    {/if}
-  </Modal>
-  <nav id="navbar">
-    <Button on:click={() => (window.location = "/")}>Home</Button>
-    <div id="navbar-actions">
-      <TextInput
-        readonly
-        on:click={() => (searchUsersModalOpened = true)}
-        icon={MagnifyingGlass}
-        placeholder="Buscar usuários"
-      />
-      <Button on:click={() => (followRequestsModalOpened = true)}>
-        Solicitações
-      </Button>
-      <Logout />
-    </div>
-  </nav>
-</div>
-<hr />
+    <Button on:click={() => (followRequestsModalOpened = true)}>
+      Solicitações
+    </Button>
+    <Logout />
+  </div>
+</nav>
 
 <style>
   #navbar {
     display: flex;
     justify-content: space-between;
+    border-bottom: 1px solid #CCC;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
   }
   #navbar-actions {
     display: flex;
