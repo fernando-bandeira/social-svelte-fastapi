@@ -75,6 +75,7 @@
               author={post.author}
               content={post.content}
               date={post.date}
+              on:delete={fetchData}
             />
           {/each}
         {:else}

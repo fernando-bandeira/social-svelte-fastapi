@@ -189,6 +189,14 @@ def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization
         db.commit()
 
 
+@app.delete('/delete-post/{post_id}/')
+def delete_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
+    db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if db_post:
+        db.delete(db_post)
+        db.commit()
+
+
 @app.get('/post/{post_id}/')
 def get_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()

@@ -2,6 +2,9 @@
   import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
   import api from "../utils/api";
   import { onMount } from "svelte";
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
 
   export let id;
   export let userId;
@@ -36,6 +39,11 @@
     });
     const res = await api.get(`/post/${id}/`);
     content = res.data.content;
+  };
+
+  const deletePost = async () => {
+    await api.delete(`/delete-post/${id}/`);
+    dispatch("delete");
   };
 </script>
 
@@ -81,7 +89,7 @@
           <Button on:click={() => (editing = true)} disabled={editing}>
             Editar
           </Button>
-          <Button color="red">Excluir</Button>
+          <Button color="red" on:click={deletePost}>Excluir</Button>
         </div>
       {/if}
     </div>
