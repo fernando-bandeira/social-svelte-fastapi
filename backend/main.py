@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import desc, not_
+from sqlalchemy import desc, not_, or_
 
 origins = [
     'http://localhost:5173',
@@ -334,7 +334,10 @@ def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: st
 def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(None)):
     followed_users_posts = db.query(models.Post).join(
         models.FollowRelation,
-        models.Post.author == models.FollowRelation.approver
+        or_(
+            models.Post.author == models.FollowRelation.approver,
+            models.Post.author == user_id
+        )
     ).filter(
         models.FollowRelation.requester == user_id,
         models.FollowRelation.approved
