@@ -1,6 +1,6 @@
 <script>
   import Logout from "../routes/Logout.svelte";
-  import { TextInput, Modal, Button, Paper } from "@svelteuidev/core";
+  import { TextInput, Modal, Button, Paper, Text } from "@svelteuidev/core";
   import api from "../utils/api";
   import { MagnifyingGlass } from "radix-icons-svelte";
   import { goto } from "$app/navigation";
@@ -13,7 +13,7 @@
   let followRequests = [];
 
   const searchUsers = async (search) => {
-    const res = await api.get(`/users?email=${search}`);
+    const res = await api.get(`/users?name=${search}`);
     users = res.data;
   };
 
@@ -44,6 +44,7 @@
   target="body"
 >
   <TextInput
+    autofocus
     on:input={(e) => searchUsers(e.target.value)}
     icon={MagnifyingGlass}
     placeholder="Buscar usuários"
@@ -57,7 +58,7 @@
 <Modal
   opened={followRequestsModalOpened}
   on:close={() => (followRequestsModalOpened = false)}
-  title="Follow Requests"
+  title="Solicitações para seguir"
   target="body"
 >
   {#if followRequests.length > 0}
@@ -75,7 +76,7 @@
       </Paper>
     {/each}
   {:else}
-    Sem solicitações
+    <Text>Não há solicitações.</Text>
   {/if}
 </Modal>
 <nav id="navbar">
