@@ -7,7 +7,7 @@
   import Post from "../../../components/Post.svelte";
 
   export let data;
-  const profileId = data.slug;
+  const profileId = Number(data.slug);
 
   let user;
   userContext.subscribe((value) => {
@@ -21,11 +21,12 @@
 
   const fetchData = async () => {
     if (user?.id) {
+      console.log(typeof user.id)
       const resProfile = await api.get(`/user/${profileId}`);
       profileData = resProfile.data;
       const resRelation = await api.get(`/${user.id}/follows/${profileId}/`);
       relationData = resRelation.data;
-      if (relationData?.approved) {
+      if (relationData?.approved || user.id === profileId) {
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
@@ -52,18 +53,21 @@
     <div id="box">
       <Paper>
         <div id="title-action">
-          <Title>Perfil de {profileData.name}</Title>
-          {#if relationData?.approved}
-            <Button color="red" on:click={unfollow}>Parar de seguir</Button>
-          {:else if relationData?.requested}
-            <Button color="red" on:click={unfollow}>Cancelar solicitação</Button
-            >
-          {:else}
-            <Button on:click={follow}>Seguir</Button>
+          <Title>{profileData.name}</Title>
+          {#if user.id !== profileId}
+            {#if relationData?.approved}
+              <Button color="red" on:click={unfollow}>Parar de seguir</Button>
+            {:else if relationData?.requested}
+              <Button color="red" on:click={unfollow}
+                >Cancelar solicitação</Button
+              >
+            {:else}
+              <Button on:click={follow}>Seguir</Button>
+            {/if}
           {/if}
         </div>
         <hr />
-        {#if relationData?.approved}
+        {#if relationData?.approved || user.id === profileId}
           {#each posts as post}
             <Post
               id={post.id}
