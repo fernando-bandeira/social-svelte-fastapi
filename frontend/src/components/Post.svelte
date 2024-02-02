@@ -3,6 +3,7 @@
   import api from "../utils/api";
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
+  import { focus } from "@svelteuidev/composables";
 
   const dispatch = createEventDispatcher();
 
@@ -42,8 +43,10 @@
   };
 
   const deletePost = async () => {
-    await api.delete(`/delete-post/${id}/`);
-    dispatch("delete");
+    if (window.confirm("Deseja realmente excluir este post?")) {
+      await api.delete(`/delete-post/${id}/`);
+      dispatch("delete");
+    }
   };
 </script>
 
@@ -57,7 +60,7 @@
         <br />
         {#if editing}
           <div id="edit-section">
-            <Textarea bind:value={editedContent} autofocus />
+            <Textarea bind:value={editedContent} use={[[focus]]} />
             <div id="edit-actions">
               <Button
                 color="red"
