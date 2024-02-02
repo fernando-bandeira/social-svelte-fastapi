@@ -175,7 +175,7 @@ def logout(req_data: LogoutBase, db: db_dependency):
 @app.post('/create-post/')
 def create_post(req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
-    db_post = models.Post(content=req_data.content, author=req_data.author, date=req_data.date)
+    db_post = models.Post(content=req_data.content, author=req_data.author, date=req_data.date, edited=False)
     db.add(db_post)
     db.commit()
 
@@ -186,6 +186,7 @@ def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if db_post:
         db_post.content = req_data.content
+        db_post.edited = True
         db.commit()
 
 
@@ -217,7 +218,8 @@ def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = He
             'name': db_user.name,
         },
         'content': post.content,
-        'date': post.date
+        'date': post.date,
+        'edited': post.edited
     } for post in db_posts]
     return response_payload
 
@@ -361,7 +363,8 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
                 'name': db_user.name,
             },
             'content': post.content,
-            'date': post.date
+            'date': post.date,
+            'edited': post.edited
         })
 
     return response_payload

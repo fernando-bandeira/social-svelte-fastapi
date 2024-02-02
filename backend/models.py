@@ -26,6 +26,7 @@ class Post(Base):
     author = Column(Integer, ForeignKey('users.id'), index=True)
     content = Column(String, index=True)
     date = Column(String, index=True)
+    edited = Column(Boolean)
 
 
 class FollowRelation(Base):

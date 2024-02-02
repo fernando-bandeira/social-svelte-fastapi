@@ -49,7 +49,8 @@
           author={post.author}
           content={post.content}
           date={post.date}
-          on:delete={fetchData}
+          edited={post.edited}
+          on:update={fetchData}
         />
       {/each}
     </Paper>

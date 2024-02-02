@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
+  import { Trash, Pencil1 } from "radix-icons-svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -12,6 +13,7 @@
   export let author;
   export let date;
   export let content;
+  export let edited;
 
   let liked = false;
   let editing = false;
@@ -40,12 +42,13 @@
     });
     const res = await api.get(`/post/${id}/`);
     content = res.data.content;
+    dispatch("update");
   };
 
   const deletePost = async () => {
     if (window.confirm("Deseja realmente excluir este post?")) {
       await api.delete(`/delete-post/${id}/`);
-      dispatch("delete");
+      dispatch("update");
     }
   };
 </script>
@@ -56,6 +59,9 @@
       <div>
         <Text>
           <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+          {#if edited}
+            (Editado)
+          {/if}
         </Text>
         <br />
         {#if editing}
@@ -90,9 +96,13 @@
       {#if userId === author.id}
         <div id="actions">
           <Button on:click={() => (editing = true)} disabled={editing}>
+            <Pencil1 slot="leftIcon" />
             Editar
           </Button>
-          <Button color="red" on:click={deletePost}>Excluir</Button>
+          <Button color="red" on:click={deletePost}>
+            <Trash slot="leftIcon" />
+            Excluir
+          </Button>
         </div>
       {/if}
     </div>
