@@ -28,12 +28,12 @@
 
   const approve = async (otherUser) => {
     await api.put(`/${userId}/approves/${otherUser}/`);
-    fetchData();
+    getFollowRequests();
   };
 
   const unfollow = async (otherUser) => {
     await api.delete(`/${otherUser}/follows/${userId}/`);
-    fetchData();
+    getFollowRequests();
   };
 </script>
 
@@ -67,10 +67,21 @@
         <div class="request-card">
           {request.requester_name}
           <div class="request-actions">
-            <Button on:click={() => approve(request.requester)}>Aprovar</Button>
-            <Button color="red" on:click={() => unfollow(request.requester)}
-              >Recusar</Button
+            <Button
+              on:click={() => {
+                approve(request.requester);
+              }}
             >
+              Aprovar
+            </Button>
+            <Button
+              color="red"
+              on:click={() => {
+                unfollow(request.requester);
+              }}
+            >
+              Recusar
+            </Button>
           </div>
         </div>
       </Paper>
