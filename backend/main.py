@@ -20,7 +20,7 @@ origins = [
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-ACCESS_EXP = 10
+ACCESS_EXP = 30 * 60
 REFRESH_EXP = 30 * 60
 
 
@@ -193,6 +193,7 @@ def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization
 def delete_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if db_post:
+        verify_authorization(authorization, [db_post.author])
         db.delete(db_post)
         db.commit()
 
@@ -200,6 +201,7 @@ def delete_post(post_id: int, db: db_dependency, authorization: str = Header(Non
 @app.get('/post/{post_id}/')
 def get_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    verify_authorization(authorization, [db_post.author])
     return db_post
 
 
@@ -239,6 +241,7 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
 
 @app.get('/{user_1}/follows/{user_2}/')
 def check_relation(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_1, user_2])
     result = db.query(models.FollowRelation).filter(
         models.FollowRelation.requester == user_1,
         models.FollowRelation.approver == user_2
@@ -253,7 +256,7 @@ def check_relation(user_1: int, user_2: int, db: db_dependency, authorization: s
 
 @app.post('/{user_1}/follows/{user_2}/')
 def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    # verify_authorization(authorization, [user_1])
+    verify_authorization(authorization, [user_1])
     db_approver = db.query(models.User).filter(models.User.id == user_2).first()
     db_follow = models.FollowRelation(requester=user_1, approver=user_2, approved=db_approver.public)
     db.add(db_follow)
@@ -262,7 +265,7 @@ def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Hea
 
 @app.delete('/{user_1}/follows/{user_2}/')
 def unfollow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    # verify_authorization(authorization, [user_1, user_2])
+    verify_authorization(authorization, [user_1, user_2])
     result = db.query(models.FollowRelation).filter(
         models.FollowRelation.requester == user_1,
         models.FollowRelation.approver == user_2
@@ -274,7 +277,7 @@ def unfollow(user_1: int, user_2: int, db: db_dependency, authorization: str = H
 
 @app.put('/{user_1}/approves/{user_2}/')
 def approve(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    # verify_authorization(authorization, [user_1])
+    verify_authorization(authorization, [user_1])
     db_relation = db.query(models.FollowRelation).filter(
         models.FollowRelation.approver == user_1,
         models.FollowRelation.requester == user_2
@@ -286,6 +289,7 @@ def approve(user_1: int, user_2: int, db: db_dependency, authorization: str = He
 
 @app.get('/requests/{user_id}/')
 def get_requests(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_id])
     db_requests = db.query(models.FollowRelation).filter(
         models.FollowRelation.approver == user_id,
         not_(models.FollowRelation.approved)
@@ -303,6 +307,7 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
 
 @app.get('/{user_id}/likes/{post_id}/')
 def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization)
     db_like = db.query(models.PostLike).filter(
         models.PostLike.user == user_id,
         models.PostLike.post == post_id
@@ -314,6 +319,7 @@ def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str
 
 @app.post('/{user_id}/likes/{post_id}/')
 def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_id])
     db_like = models.PostLike(user=user_id, post=post_id)
     db.add(db_like)
     db.commit()
@@ -321,6 +327,7 @@ def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str 
 
 @app.delete('/{user_id}/likes/{post_id}/')
 def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_id])
     db_like = db.query(models.PostLike).filter(
         models.PostLike.user == user_id,
         models.PostLike.post == post_id
@@ -332,6 +339,7 @@ def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: st
 
 @app.get('/feed/{user_id}')
 def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_id])
     followed_users_posts = db.query(models.Post).join(
         models.FollowRelation,
         or_(

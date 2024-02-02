@@ -21,7 +21,6 @@
 
   const fetchData = async () => {
     if (user?.id) {
-      console.log(typeof user.id)
       const resProfile = await api.get(`/user/${profileId}`);
       profileData = resProfile.data;
       const resRelation = await api.get(`/${user.id}/follows/${profileId}/`);
