@@ -125,7 +125,7 @@ def register(req_data: RegisterBase, db: db_dependency):
     if result:
         raise HTTPException(status_code=400, detail='User with that email already exists.')
     hashed_password = hash_str(req_data.password)
-    db_user = models.User(name=req_data.name, email=req_data.email, password=hashed_password, public=False)
+    db_user = models.User(name=req_data.name, email=req_data.email, password=hashed_password, public=req_data.public)
     db.add(db_user)
     db.commit()
 

@@ -50,7 +50,7 @@
     placeholder="Buscar usuários"
   />
   <div id="users-list">
-    {#each users as user}
+    {#each users as user (user.id)}
       <Paper><a href={`/profile/${user.id}`}>{user.name}</a></Paper>
     {/each}
   </div>
@@ -62,7 +62,7 @@
   target="body"
 >
   {#if followRequests.length > 0}
-    {#each followRequests as request}
+    {#each followRequests as request (request.id)}
       <Paper>
         <div class="request-card">
           {request.requester_name}

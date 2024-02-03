@@ -67,7 +67,7 @@
         </div>
         <hr />
         {#if relationData?.approved || user.id === profileId || profileData.public}
-          {#each posts as post}
+          {#each posts as post (post.id)}
             <Post
               id={post.id}
               userId={user?.id}

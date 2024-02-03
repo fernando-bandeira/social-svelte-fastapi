@@ -42,7 +42,7 @@
         <Button type="submit">Postar</Button>
       </form>
       <hr />
-      {#each posts as post}
+      {#each posts as post (post.id)}
         <Post
           id={post.id}
           userId={user?.id}
