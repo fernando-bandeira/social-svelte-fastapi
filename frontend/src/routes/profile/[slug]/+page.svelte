@@ -2,7 +2,7 @@
   import AuthWrapper from "../../../utils/AuthWrapper.svelte";
   import { userContext } from "../../../stores/userContext.js";
   import api from "../../../utils/api";
-  import { Button, Title, Paper } from "@svelteuidev/core";
+  import { Button, Title, Paper, Text } from "@svelteuidev/core";
   import Header from "../../../components/Header.svelte";
   import Post from "../../../components/Post.svelte";
 
@@ -15,6 +15,7 @@
   });
 
   let profileData;
+  let followersInfo;
   let relationData;
   let posts;
   let loading = true;
@@ -25,12 +26,18 @@
       profileData = resProfile.data;
       const resRelation = await api.get(`/${user.id}/follows/${profileId}/`);
       relationData = resRelation.data;
-      if (relationData?.approved || user.id === profileId || profileData.public) {
+      if (
+        relationData?.approved ||
+        user.id === profileId ||
+        profileData.public
+      ) {
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
-      const followersQty = await api.get(`/number-followers/${profileId}`);
-      profileData.followersQty = followersQty.data.qty;
+      const resFollowersInfo = await api.get(
+        `/profile-info/${user.id}/${profileId}/`,
+      );
+      followersInfo = resFollowersInfo.data;
       loading = false;
     }
   };
@@ -55,18 +62,22 @@
       <Paper>
         <div id="title-action">
           <Title>{profileData.name}</Title>
-          {#if user.id !== profileId}
-            {#if relationData?.approved}
-              <Button color="red" on:click={unfollow}>Parar de seguir</Button>
-            {:else if relationData?.requested}
-              <Button color="red" on:click={unfollow}
-                >Cancelar solicitação</Button
-              >
-            {:else}
-              <Button on:click={follow}>Seguir</Button>
+          <div id="profile-info">
+            {#if user.id !== profileId}
+              {#if relationData?.approved}
+                <Button color="red" on:click={unfollow}>Parar de seguir</Button>
+              {:else if relationData?.requested}
+                <Button color="red" on:click={unfollow}
+                  >Cancelar solicitação</Button
+                >
+              {:else}
+                <Button on:click={follow}>Seguir</Button>
+              {/if}
             {/if}
-          {/if}
-          {profileData.followersQty}
+            <Text>
+              Seguidores: {followersInfo.followers} | Seguindo: {followersInfo.following} | Seguidores em comum: {followersInfo.mutual}
+            </Text>
+          </div>
         </div>
         <hr />
         {#if relationData?.approved || user.id === profileId || profileData.public}
@@ -98,6 +109,12 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    gap: 10px;
+  }
+
+  #profile-info {
+    display: flex;
+    align-items: center;
     gap: 10px;
   }
 </style>

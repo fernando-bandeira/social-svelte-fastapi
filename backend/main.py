@@ -3,15 +3,14 @@ from pydantic import BaseModel
 from typing import Annotated
 import models
 from database import engine, SessionLocal
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 import hashlib
 import os
 from dotenv import load_dotenv
 import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import desc, not_, or_
-from time import sleep
+from sqlalchemy import desc, not_, or_, and_
 
 origins = [
     'http://localhost:5173',
@@ -371,13 +370,34 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
     return response_payload
 
 
-@app.get('/number-followers/{user_id}/')
-def get_followers_qty(user_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
+@app.get('/profile-info/{user_id}/{profile_id}/')
+def get_followers_qty(user_id: int, profile_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [user_id])
+
     db_followers = db.query(models.FollowRelation).filter(
-        models.FollowRelation.approver == user_id,
+        models.FollowRelation.approver == profile_id,
         models.FollowRelation.approved
     ).count()
+
+    db_following = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == profile_id,
+        models.FollowRelation.approved
+    ).count()
+
+    f1 = aliased(models.FollowRelation)
+    f2 = aliased(models.FollowRelation)
+
+    db_mutual = db.query(f1).join(f2, f1.requester == f2.requester).filter(
+        f1.approved,
+        f2.approved,
+        or_(
+            and_(f1.approver == user_id, f2.approver == profile_id),
+            and_(f1.approver == profile_id, f2.approver == user_id),
+        )
+    ).distinct().count()
+
     return {
-        'qty': db_followers
+        'followers': db_followers,
+        'following': db_following,
+        'mutual': db_mutual / 2
     }
