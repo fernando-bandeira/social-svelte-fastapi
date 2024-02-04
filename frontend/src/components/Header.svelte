@@ -1,6 +1,13 @@
 <script>
   import Logout from "../routes/Logout.svelte";
-  import { TextInput, Modal, Button, Paper, Text } from "@svelteuidev/core";
+  import {
+    TextInput,
+    Modal,
+    Button,
+    Paper,
+    Text,
+    Tooltip,
+  } from "@svelteuidev/core";
   import api from "../utils/api";
   import { MagnifyingGlass } from "radix-icons-svelte";
   import { goto } from "$app/navigation";
@@ -104,9 +111,18 @@
       placeholder="Buscar usuários"
     />
     <Button on:click={() => goto(`/profile/${userId}/`)}>Perfil</Button>
-    <Button on:click={() => (followRequestsModalOpened = true)}>
-      Solicitações
-    </Button>
+    <Tooltip
+      opened={followRequests.length > 0 && !followRequestsModalOpened}
+      color="red"
+      label={followRequests.length}
+      position="bottom"
+      placement="center"
+      withArrow
+    >
+      <Button on:click={() => (followRequestsModalOpened = true)}>
+        Solicitações
+      </Button>
+    </Tooltip>
     <Logout />
   </div>
 </nav>
