@@ -74,7 +74,7 @@
     {#each followRequests as request (request.id)}
       <Paper>
         <div class="request-card">
-          {request.requester_name}
+          <Text>{request.requester_name}</Text>
           <div class="request-actions">
             <Button
               on:click={() => {
