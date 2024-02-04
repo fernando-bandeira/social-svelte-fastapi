@@ -51,7 +51,9 @@
   />
   <div id="users-list">
     {#each users as user (user.id)}
-      <Paper><a href={`/profile/${user.id}`}>{user.name}</a></Paper>
+      <Paper>
+        <Text><a href={`/profile/${user.id}/`}>{user.name}</a></Text>
+      </Paper>
     {/each}
   </div>
 </Modal>

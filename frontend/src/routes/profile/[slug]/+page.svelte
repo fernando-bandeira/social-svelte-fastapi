@@ -7,7 +7,7 @@
   import Post from "../../../components/Post.svelte";
 
   export let data;
-  const profileId = Number(data.slug);
+  $: profileId = Number(data.slug);
 
   let user;
   userContext.subscribe((value) => {
@@ -42,7 +42,7 @@
     }
   };
 
-  $: user, fetchData();
+  $: user, profileId, fetchData();
 
   const follow = async () => {
     await api.post(`/${user.id}/follows/${profileId}/`);
@@ -75,7 +75,8 @@
               {/if}
             {/if}
             <Text>
-              Seguidores: {followersInfo.followers} | Seguindo: {followersInfo.following} | Seguidores em comum: {followersInfo.mutual}
+              Seguidores: {followersInfo.followers} | Seguindo: {followersInfo.following}
+              | Seguidores em comum: {followersInfo.mutual}
             </Text>
           </div>
         </div>
