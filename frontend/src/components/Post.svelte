@@ -23,24 +23,30 @@
   export let edited;
 
   let liked = false;
+  let likeCount = 0;
   let loadingLikeFetch = true;
   let editing = false;
   let editedContent = content;
 
-  onMount(async () => {
-    const res = await api.get(`/${userId}/likes/${id}/`);
-    liked = res.data.like;
+  const fetchLike = async () => {
+    const resLiked = await api.get(`/${userId}/likes/${id}/`);
+    liked = resLiked.data.like;
+    const resCount = await api.get(`/likes/${id}/`);
+    likeCount = resCount.data.count;
     loadingLikeFetch = false;
+  };
+
+  onMount(() => {
+    fetchLike();
   });
 
   const handleLike = async () => {
     if (liked) {
       await api.delete(`/${userId}/likes/${id}/`);
-      liked = false;
     } else {
       await api.post(`/${userId}/likes/${id}/`);
-      liked = true;
     }
+    fetchLike();
   };
 
   const updatePost = async () => {
@@ -118,7 +124,10 @@
     {#if loadingLikeFetch}
       <Skeleton circle height={25} />
     {:else}
-      <Checkbox checked={liked} on:input={handleLike} />
+      <div id="like-section">
+        <Checkbox checked={liked} on:input={handleLike} />
+        <Text>{likeCount}</Text>
+      </div>
     {/if}
   </Paper>
 </div>
@@ -144,6 +153,12 @@
   #edit-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
+  }
+  #like-section {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     gap: 10px;
   }
   a {

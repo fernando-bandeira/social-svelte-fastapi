@@ -401,3 +401,15 @@ def get_followers_qty(user_id: int, profile_id: int, db: db_dependency, authoriz
         'following': db_following,
         'mutual': db_mutual / 2
     }
+
+
+@app.get('/likes/{post_id}/')
+def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization)
+    db_likes = db.query(models.PostLike).filter(
+        models.PostLike.post == post_id
+    ).count()
+
+    return {
+        'count': db_likes
+    }
