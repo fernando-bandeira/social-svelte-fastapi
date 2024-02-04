@@ -11,6 +11,7 @@ import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, not_, or_
+from time import sleep
 
 origins = [
     'http://localhost:5173',
@@ -368,3 +369,15 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
         })
 
     return response_payload
+
+
+@app.get('/number-followers/{user_id}/')
+def get_followers_qty(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization)
+    db_followers = db.query(models.FollowRelation).filter(
+        models.FollowRelation.approver == user_id,
+        models.FollowRelation.approved
+    ).count()
+    return {
+        'qty': db_followers
+    }

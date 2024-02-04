@@ -29,6 +29,8 @@
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
+      const followersQty = await api.get(`/number-followers/${profileId}`);
+      profileData.followersQty = followersQty.data.qty;
       loading = false;
     }
   };
@@ -64,6 +66,7 @@
               <Button on:click={follow}>Seguir</Button>
             {/if}
           {/if}
+          {profileData.followersQty}
         </div>
         <hr />
         {#if relationData?.approved || user.id === profileId || profileData.public}
