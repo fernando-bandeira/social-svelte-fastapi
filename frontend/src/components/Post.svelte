@@ -1,5 +1,12 @@
 <script>
-  import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
+  import {
+    Paper,
+    Text,
+    Checkbox,
+    Button,
+    Textarea,
+    Skeleton,
+  } from "@svelteuidev/core";
   import api from "../utils/api";
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
@@ -16,12 +23,14 @@
   export let edited;
 
   let liked = false;
+  let loadingLikeFetch = true;
   let editing = false;
   let editedContent = content;
 
   onMount(async () => {
     const res = await api.get(`/${userId}/likes/${id}/`);
     liked = res.data.like;
+    loadingLikeFetch = false;
   });
 
   const handleLike = async () => {
@@ -106,7 +115,11 @@
         </div>
       {/if}
     </div>
-    <Checkbox checked={liked} on:input={handleLike} />
+    {#if loadingLikeFetch}
+      <Skeleton circle height={25} />
+    {:else}
+      <Checkbox checked={liked} on:input={handleLike} />
+    {/if}
   </Paper>
 </div>
 
