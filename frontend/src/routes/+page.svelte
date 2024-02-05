@@ -26,6 +26,8 @@
       content: post,
       author: user.id,
       date: new Date().toLocaleString("en-GB"),
+      repost: false,
+      reference: null
     });
     post = "";
     fetchData();
@@ -50,6 +52,8 @@
           content={post.content}
           date={post.date}
           edited={post.edited}
+          repost={post.repost}
+          reference={post.reference}
           on:update={fetchData}
         />
       {/each}

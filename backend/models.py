@@ -27,6 +27,8 @@ class Post(Base):
     content = Column(String, index=True)
     date = Column(String, index=True)
     edited = Column(Boolean)
+    repost = Column(Boolean)
+    reference = Column(Integer, ForeignKey('posts.id'), index=True)
 
 
 class FollowRelation(Base):

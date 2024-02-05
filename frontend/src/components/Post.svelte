@@ -21,10 +21,14 @@
   export let date;
   export let content;
   export let edited;
+  export let repost;
+  export let reference;
 
   let liked = false;
-  let likeCount = 0;
+  let likeCount;
   let loadingLikeFetch = true;
+  let originalPostData;
+  let loadingOriginalPostFetch = true;
   let editing = false;
   let editedContent = content;
 
@@ -36,8 +40,17 @@
     loadingLikeFetch = false;
   };
 
-  onMount(() => {
+  const fetchOriginalPost = async () => {
+    if (repost) {
+      const res = await api.get(`/post/${reference}/`);
+      originalPostData = res.data;
+    }
+    loadingOriginalPostFetch = false;
+  };
+
+  onMount(async () => {
     fetchLike();
+    fetchOriginalPost();
   });
 
   const handleLike = async () => {
@@ -66,6 +79,17 @@
       dispatch("update");
     }
   };
+
+  const handleRepost = async () => {
+    await api.post("/create-post/", {
+      author: userId,
+      content: "",
+      date: new Date().toLocaleString("en-GB"),
+      repost: true,
+      reference: id,
+    });
+    dispatch("update");
+  };
 </script>
 
 <div id="container">
@@ -73,7 +97,18 @@
     <div id="post-info">
       <div>
         <Text>
-          <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+          {#if repost && !loadingOriginalPostFetch}
+            <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
+            <a href={`/profile/${originalPostData?.author?.id}/`}>
+              {originalPostData?.author?.name}
+            </a>
+            em {date}
+            <hr />
+          {:else if loadingOriginalPostFetch}
+            <Skeleton height={25} radius="xl" />
+          {:else}
+            <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+          {/if}
           {#if edited}
             (Editado)
           {/if}
@@ -103,6 +138,8 @@
               </Button>
             </div>
           </div>
+        {:else if repost}
+          <Text>{originalPostData?.content}</Text>
         {:else}
           <Text>{content}</Text>
         {/if}
@@ -110,15 +147,19 @@
       </div>
       {#if userId === author.id}
         <div id="actions">
-          <Button on:click={() => (editing = true)} disabled={editing}>
-            <Pencil1 slot="leftIcon" />
-            Editar
-          </Button>
+          {#if !repost}
+            <Button on:click={() => (editing = true)} disabled={editing}>
+              <Pencil1 slot="leftIcon" />
+              Editar
+            </Button>
+          {/if}
           <Button color="red" on:click={deletePost}>
             <Trash slot="leftIcon" />
             Excluir
           </Button>
         </div>
+      {:else}
+        <Button on:click={handleRepost}>Repostar</Button>
       {/if}
     </div>
     {#if loadingLikeFetch}

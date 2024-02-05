@@ -76,7 +76,9 @@
             {/if}
             <Text>
               Seguidores: {followersInfo.followers} | Seguindo: {followersInfo.following}
-              | Seguidores em comum: {followersInfo.mutual}
+              {#if profileId !== user.id}
+                | Seguidores em comum: {followersInfo.mutual}
+              {/if}
             </Text>
           </div>
         </div>
@@ -90,6 +92,8 @@
               content={post.content}
               date={post.date}
               edited={post.edited}
+              repost={post.repost}
+              reference={post.reference}
               on:update={fetchData}
             />
           {/each}

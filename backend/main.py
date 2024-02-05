@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from pydantic import BaseModel
-from typing import Annotated
+from typing import Annotated, Optional
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session, aliased
@@ -91,6 +91,8 @@ class PostBase(BaseModel):
     author: int
     content: str
     date: str
+    repost: bool
+    reference: Optional[int]
 
 
 def get_db():
@@ -175,7 +177,14 @@ def logout(req_data: LogoutBase, db: db_dependency):
 @app.post('/create-post/')
 def create_post(req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
-    db_post = models.Post(content=req_data.content, author=req_data.author, date=req_data.date, edited=False)
+    db_post = models.Post(
+        author=req_data.author,
+        content=req_data.content,
+        date=req_data.date,
+        edited=False,
+        repost=req_data.repost,
+        reference=req_data.reference
+    )
     db.add(db_post)
     db.commit()
 
@@ -202,8 +211,20 @@ def delete_post(post_id: int, db: db_dependency, authorization: str = Header(Non
 @app.get('/post/{post_id}/')
 def get_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
-    verify_authorization(authorization, [db_post.author])
-    return db_post
+    db_user = db.query(models.User).filter(models.User.id == db_post.author).first()
+    verify_authorization(authorization)
+    return {
+        'id': db_post.id,
+        'author': {
+            'id': db_user.id,
+            'name': db_user.name,
+        },
+        'content': db_post.content,
+        'date': db_post.date,
+        'edited': db_post.edited,
+        'repost': db_post.repost,
+        'reference': db_post.reference
+    }
 
 
 @app.get('/posts/{user_id}/')
@@ -219,7 +240,9 @@ def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = He
         },
         'content': post.content,
         'date': post.date,
-        'edited': post.edited
+        'edited': post.edited,
+        'repost': post.repost,
+        'reference': post.reference
     } for post in db_posts]
     return response_payload
 
@@ -364,7 +387,9 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
             },
             'content': post.content,
             'date': post.date,
-            'edited': post.edited
+            'edited': post.edited,
+            'repost': post.repost,
+            'reference': post.reference
         })
 
     return response_payload
