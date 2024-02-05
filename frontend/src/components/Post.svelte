@@ -31,6 +31,7 @@
   let loadingOriginalPostFetch = true;
   let editing = false;
   let editedContent = content;
+  let processedPost = content;
 
   const fetchLike = async () => {
     const resLiked = await api.get(`/${userId}/likes/${id}/`);
@@ -48,9 +49,28 @@
     loadingOriginalPostFetch = false;
   };
 
+  const processPostTags = async () => {
+    const regex = /@(\w+)@/g;
+    const matches = content.match(regex);
+    if (matches) {
+      const replacements = await Promise.all(
+        matches.map(async (match) => {
+          const word = match.substring(1, match.length - 1);
+          const res = await api.get(`/user/${word}/`);
+          return [res.data.id, res.data.name];
+        }),
+      );
+      processedPost = content.replace(regex, () => {
+        const data = replacements.shift()
+        return "<a href='/profile/" + data[0] + "/'>" + data[1] + "</a>";
+      });
+    }
+  };
+
   onMount(async () => {
     fetchLike();
     fetchOriginalPost();
+    processPostTags();
   });
 
   const handleLike = async () => {
@@ -141,7 +161,7 @@
         {:else if repost}
           <Text>{originalPostData?.content}</Text>
         {:else}
-          <Text>{content}</Text>
+          <Text>{processedPost}</Text>
         {/if}
         <br />
       </div>
@@ -158,7 +178,7 @@
             Excluir
           </Button>
         </div>
-      {:else}
+      {:else if !repost}
         <Button on:click={handleRepost}>Repostar</Button>
       {/if}
     </div>
