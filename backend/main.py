@@ -362,7 +362,7 @@ def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: st
         db.commit()
 
 
-@app.get('/feed/{user_id}')
+@app.get('/feed/{user_id}/')
 def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [user_id])
     followed_users_posts = db.query(models.Post).join(

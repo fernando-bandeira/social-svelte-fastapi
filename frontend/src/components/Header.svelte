@@ -74,7 +74,11 @@
     {#each followRequests as request (request.id)}
       <Paper>
         <div class="request-card">
-          <Text>{request.requester_name}</Text>
+          <Text>
+            <a href={`/profile/${request.requester}/`}>
+              {request.requester_name}
+            </a>
+          </Text>
           <div class="request-actions">
             <Button
               on:click={() => {
@@ -152,5 +156,11 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
 </style>

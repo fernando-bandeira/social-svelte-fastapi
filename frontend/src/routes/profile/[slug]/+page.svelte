@@ -116,7 +116,6 @@
     justify-content: flex-start;
     gap: 10px;
   }
-
   #profile-info {
     display: flex;
     align-items: center;
