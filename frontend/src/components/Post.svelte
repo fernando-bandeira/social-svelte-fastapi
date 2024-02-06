@@ -12,6 +12,7 @@
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
   import { Trash, Pencil1 } from "radix-icons-svelte";
+  import ProcessedPost from "./ProcessedPost.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -32,6 +33,7 @@
   let editing = false;
   let editedContent = content;
   let processedPost = content;
+  let tags = [];
 
   const fetchLike = async () => {
     const resLiked = await api.get(`/${userId}/likes/${id}/`);
@@ -50,19 +52,24 @@
   };
 
   const processPostTags = async () => {
+    let target;
     const regex = /@(\w+)@/g;
-    const matches = content.match(regex);
+    if (repost) {
+      target = originalPostData.content;
+    } else {
+      target = content
+    }
+    const matches = target.match(regex);
     if (matches) {
-      const replacements = await Promise.all(
+      tags = await Promise.all(
         matches.map(async (match) => {
           const word = match.substring(1, match.length - 1);
           const res = await api.get(`/user/${word}/`);
-          return [res.data.id, res.data.name];
+          return { id: res.data.id, name: res.data.name };
         }),
       );
-      processedPost = content.replace(regex, () => {
-        const data = replacements.shift()
-        return "<a href='/profile/" + data[0] + "/'>" + data[1] + "</a>";
+      processedPost = target.replace(regex, () => {
+        return "@tag@";
       });
     }
   };
@@ -161,7 +168,7 @@
         {:else if repost}
           <Text>{originalPostData?.content}</Text>
         {:else}
-          <Text>{processedPost}</Text>
+          <Text><ProcessedPost {tags} {processedPost} /></Text>
         {/if}
         <br />
       </div>
