@@ -6,7 +6,7 @@
 {#each processedPost.split("@tag@") as section, index (index)}
   {section}
   {#if index < tags.length}
-    <a href={`/profile/${tags[index].id}`}>{tags[index].name}</a>
+    <a href={`/profile/${tags[index].id}`}>@{tags[index].name}</a>
   {/if}
 {/each}
 

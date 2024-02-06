@@ -11,7 +11,7 @@
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
-  import { Trash, Pencil1 } from "radix-icons-svelte";
+  import { Trash, Pencil1, Update } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
 
   const dispatch = createEventDispatcher();
@@ -28,12 +28,16 @@
   let liked = false;
   let likeCount;
   let loadingLikeFetch = true;
+
   let originalPostData;
   let loadingOriginalPostFetch = true;
+
   let editing = false;
   let editedContent = content;
+
   let processedPost = content;
   let tags = [];
+  let loadingPostProcessing = true;
 
   const fetchLike = async () => {
     const resLiked = await api.get(`/${userId}/likes/${id}/`);
@@ -57,7 +61,7 @@
     if (repost) {
       target = originalPostData.content;
     } else {
-      target = content
+      target = content;
     }
     const matches = target.match(regex);
     if (matches) {
@@ -71,12 +75,15 @@
       processedPost = target.replace(regex, () => {
         return "@tag@";
       });
+    } else {
+      processedPost = target;
     }
+    loadingPostProcessing = false;
   };
 
   onMount(async () => {
     fetchLike();
-    fetchOriginalPost();
+    await fetchOriginalPost();
     processPostTags();
   });
 
@@ -123,23 +130,28 @@
   <Paper>
     <div id="post-info">
       <div>
-        <Text>
-          {#if repost && !loadingOriginalPostFetch}
-            <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
-            <a href={`/profile/${originalPostData?.author?.id}/`}>
-              {originalPostData?.author?.name}
-            </a>
-            em {date}
-            <hr />
-          {:else if loadingOriginalPostFetch}
-            <Skeleton height={25} radius="xl" />
-          {:else}
+        {#if repost && !loadingOriginalPostFetch}
+          <div id="repost-title">
+            <Update />
+            <Text>
+              <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
+              <a href={`/profile/${originalPostData?.author?.id}/`}>
+                {originalPostData?.author?.name}
+              </a>
+              em {date}
+            </Text>
+          </div>
+          <hr />
+        {:else if loadingOriginalPostFetch}
+          <Skeleton height={20} radius="xl" />
+        {:else}
+          <Text>
             <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
-          {/if}
-          {#if edited}
-            (Editado)
-          {/if}
-        </Text>
+          </Text>
+        {/if}
+        {#if edited}
+          (Editado)
+        {/if}
         <br />
         {#if editing}
           <div id="edit-section">
@@ -165,10 +177,10 @@
               </Button>
             </div>
           </div>
-        {:else if repost}
-          <Text>{originalPostData?.content}</Text>
-        {:else}
+        {:else if !loadingPostProcessing}
           <Text><ProcessedPost {tags} {processedPost} /></Text>
+        {:else}
+          <Skeleton height={20} radius="xl" />
         {/if}
         <br />
       </div>
@@ -207,6 +219,11 @@
   #post-info {
     display: flex;
     justify-content: space-between;
+  }
+  #repost-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
   #actions {
     display: flex;
