@@ -68,10 +68,15 @@
       tags = await Promise.all(
         matches.map(async (match) => {
           const word = match.substring(1, match.length - 1);
-          const res = await api.get(`/user/${word}/`);
-          return { id: res.data.id, name: res.data.name };
+          try {
+            const res = await api.get(`/user/${word}/`);
+            return { id: res.data.id, name: res.data.name };
+          } catch (err) {
+            return word;
+          }
         }),
       );
+      console.log(tags);
       processedPost = target.replace(regex, () => {
         return "@tag@";
       });
