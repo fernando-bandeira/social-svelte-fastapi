@@ -72,11 +72,10 @@
             const res = await api.get(`/user/${word}/`);
             return { id: res.data.id, name: res.data.name };
           } catch (err) {
-            return word;
+            return match;
           }
         }),
       );
-      console.log(tags);
       processedPost = target.replace(regex, () => {
         return "@tag@";
       });
