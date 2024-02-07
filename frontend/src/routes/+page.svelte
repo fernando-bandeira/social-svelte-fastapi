@@ -50,11 +50,8 @@
 
   const handleTagUser = () => {
     if (
-      (post?.endsWith("@") &&
-        !"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@".includes(
-          post[post.length - 2]?.toUpperCase(),
-        )) ||
-      post === "@"
+      post === "@" ||
+      (post?.endsWith("@") && !/^[a-zA-Z0-9@]$/.test(post[post.length - 2]))
     ) {
       tagUsersModalOpened = true;
     }
