@@ -251,7 +251,7 @@ def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = He
 def search_users(name: str, db: db_dependency, authorization: str = Header(None)):
     payload = verify_authorization(authorization)
     users = db.query(models.User).filter(
-        models.User.name.contains(name),
+        models.User.name.ilike(f'%{name}%'),
         models.User.id != payload['user_id']
     ).all()
     return users

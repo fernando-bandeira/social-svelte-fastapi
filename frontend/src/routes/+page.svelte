@@ -78,7 +78,7 @@
         <Paper>
           <Text
             on:click={() => {
-              post = post + `${user.id}@`;
+              post = post + `${user.id}@ `;
               tagUsersModalOpened = false;
             }}
           >
