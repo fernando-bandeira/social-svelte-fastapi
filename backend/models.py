@@ -46,3 +46,13 @@ class PostLike(Base):
     id = Column(Integer, primary_key=True, index=True)
     user = Column(Integer, ForeignKey('users.id'), index=True)
     post = Column(Integer, ForeignKey('posts.id'), index=True)
+
+
+class PostReply(Base):
+    __tablename__ = 'replies'
+
+    id = Column(Integer, primary_key=True, index=True)
+    post = Column(Integer, ForeignKey('posts.id'), index=True)
+    author = Column(Integer, ForeignKey('users.id'), index=True)
+    date = Column(String, index=True)
+    content = Column(String, index=True)
