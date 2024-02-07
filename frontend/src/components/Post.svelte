@@ -133,7 +133,7 @@
 <div id="container">
   <Paper>
     <div id="post-info">
-      <div>
+      <div style="width: 100%">
         {#if repost && !loadingOriginalPostFetch}
           <div id="repost-title">
             <Update />
@@ -223,6 +223,7 @@
   #post-info {
     display: flex;
     justify-content: space-between;
+    gap: 15px;
   }
   #repost-title {
     display: flex;
