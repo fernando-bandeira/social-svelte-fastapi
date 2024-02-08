@@ -295,8 +295,50 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
 @app.get('/user/{user_id}/')
 def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
+    visiting_user = get_user_from_token(authorization)
+
+    followers_count = db.query(models.FollowRelation).filter(
+        models.FollowRelation.approver == user_id,
+        models.FollowRelation.approved
+    ).count()
+
+    following_count = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == user_id,
+        models.FollowRelation.approved
+    ).count()
+
+    f1 = aliased(models.FollowRelation)
+    f2 = aliased(models.FollowRelation)
+    mutual_count = db.query(f1).join(f2, f1.requester == f2.requester).filter(
+        f1.approved,
+        f2.approved,
+        or_(
+            and_(f1.approver == user_id, f2.approver == user_id),
+            and_(f1.approver == user_id, f2.approver == visiting_user),
+        )
+    ).distinct().count()
+
+    follow_request = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == visiting_user,
+        models.FollowRelation.approver == user_id
+    ).first()
+    requested = follow_request is not None
+    approved = follow_request.approved if requested else False
+
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    return user
+    payload = {
+        'id': user.id,
+        'name': user.name,
+        'public': user.public,
+        'follow_info': {
+            'followers': followers_count,
+            'following': following_count,
+            'mutual': mutual_count,
+            'requested': requested,
+            'approved': approved
+        }
+    }
+    return payload
 
 
 @app.get('/{user_1}/follows/{user_2}/')
