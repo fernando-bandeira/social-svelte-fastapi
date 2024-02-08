@@ -66,13 +66,17 @@ def get_tags(content, db):
     matches = re.findall(pattern, content)
     tags = []
     for match in matches:
-        tagged_user = db.query(models.User).filter(models.User.id == match).first()
-        if tagged_user:
-            tags.append({
-                'id': tagged_user.id,
-                'name': tagged_user.name
-            })
-        else:
+        try:
+            match = int(match)
+            tagged_user = db.query(models.User).filter(models.User.id == match).first()
+            if tagged_user:
+                tags.append({
+                    'id': tagged_user.id,
+                    'name': tagged_user.name
+                })
+            else:
+                tags.append(match)
+        except ValueError:
             tags.append(match)
     return tags
 
