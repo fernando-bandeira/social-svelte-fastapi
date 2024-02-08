@@ -1,6 +1,8 @@
 <script>
-  export let processedContent;
+  export let content;
   export let tags;
+
+  const processedContent = content.replace(/@(\w+)@/g, "@tag@");
 </script>
 
 {#each processedContent.split("@tag@") as section, index (index)}
@@ -8,10 +10,8 @@
   {#if index < tags.length}
     {#if tags[index]?.id}
       <a href={`/profile/${tags[index].id}`}>@{tags[index].name}</a>
-    {:else}
-      {#if tags[index]}
-        {tags[index]}
-      {/if}
+    {:else if tags[index]}
+      {tags[index]}
     {/if}
   {/if}
 {/each}

@@ -74,7 +74,7 @@ def get_tags(content, db):
             })
         else:
             tags.append(match)
-    return re.sub(pattern, '@tag@', content), tags
+    return tags
 
 
 def generate_post_payload(post, user_id, author, db):
@@ -85,10 +85,10 @@ def generate_post_payload(post, user_id, author, db):
         content = original_post.content
     else:
         content = post.content
-    processed_content, tags = get_tags(content, db)
+    tags = get_tags(content, db)
 
-    db_likes = db.query(models.PostLike).filter(models.PostLike.post == post.id).count()
-    user_liked = db.query(models.PostLike).filter(
+    likeCount = db.query(models.PostLike).filter(models.PostLike.post == post.id).count()
+    liked = db.query(models.PostLike).filter(
         models.PostLike.post == post.id,
         models.PostLike.user == user_id
     ).first()
@@ -104,14 +104,13 @@ def generate_post_payload(post, user_id, author, db):
         'edited': post.edited,
         'repost': post.repost,
         'reference': post.reference,
-        'processed_content': processed_content,
         'tags': tags,
-        'likes': db_likes,
-        'user_liked': bool(user_liked)
+        'likeCount': likeCount,
+        'liked': bool(liked)
     }
     if post.repost:
         original_author = db.query(models.User).filter(models.User.id == original_post.author).first()
-        payload['original_author'] = {
+        payload['author']['original'] = {
             'id': original_author.id,
             'name': original_author.name
         }

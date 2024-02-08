@@ -24,7 +24,6 @@
   export let edited;
   export let repost;
   export let originalAuthor;
-  export let processedContent;
   export let tags;
   export let likeCount;
   export let liked;
@@ -127,7 +126,7 @@
             </div>
           </div>
         {:else}
-          <Text><ProcessedPost {tags} {processedContent} /></Text>
+          <Text><ProcessedPost {tags} {content} /></Text>
         {/if}
         <br />
       </div>
