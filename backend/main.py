@@ -103,7 +103,6 @@ def generate_post_payload(post, user_id, author, db):
         'date': post.date,
         'edited': post.edited,
         'repost': post.repost,
-        'reference': post.reference,
         'tags': tags,
         'likeCount': likeCount,
         'liked': bool(liked)
