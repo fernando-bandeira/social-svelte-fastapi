@@ -1,9 +1,9 @@
 <script>
-  export let processedPost;
+  export let processedContent;
   export let tags;
 </script>
 
-{#each processedPost.split("@tag@") as section, index (index)}
+{#each processedContent.split("@tag@") as section, index (index)}
   {section}
   {#if index < tags.length}
     {#if tags[index]?.id}

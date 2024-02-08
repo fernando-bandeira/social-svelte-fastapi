@@ -93,7 +93,11 @@
               date={post.date}
               edited={post.edited}
               repost={post.repost}
-              reference={post.reference}
+              originalAuthor={post.original_author}
+              processedContent={post.processed_content}
+              tags={post.tags}
+              likeCount={post.likes}
+              liked={post.user_liked}
               on:update={fetchData}
             />
           {/each}
