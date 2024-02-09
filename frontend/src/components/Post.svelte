@@ -1,7 +1,7 @@
 <script>
   import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
   import api from "../utils/api";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { focus } from "@svelteuidev/composables";
   import { Trash, Pencil1, Update } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
@@ -22,6 +22,16 @@
 
   let editing = false;
   let editedContent = content;
+
+  let replies = [];
+  const fetchReplies = async () => {
+    const res = await api.get(`/replies/${id}/`);
+    replies = res.data;
+  };
+
+  onMount(() => {
+    fetchReplies();
+  })
 
   const fetchLike = async () => {
     const resLiked = await api.get(`/${userId}/likes/${id}/`);
@@ -146,6 +156,10 @@
       <Checkbox checked={liked} on:input={handleLike} />
       <Text>{likeCount}</Text>
     </div>
+    <hr />
+    {#each replies as reply (reply.id)}
+      <li>{reply.content}</li>
+    {/each}
   </Paper>
 </div>
 

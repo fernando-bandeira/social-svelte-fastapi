@@ -160,6 +160,13 @@ class PostBase(BaseModel):
     reference: Optional[int]
 
 
+class ReplyBase(BaseModel):
+    author: int
+    content: str
+    date: str
+    post: int
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -508,3 +515,20 @@ def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)
     return {
         'count': db_likes
     }
+
+
+@app.get('/replies/{post_id}/')
+def get_replies(post_id: int, db: db_dependency, authorization: str = Header(None)):
+    # verify_authorization(authorization)
+    replies = db.query(models.PostReply).filter(
+        models.PostReply.post == post_id
+    ).all()
+    return replies
+
+
+@app.post('/reply/{post_id}/')
+def reply(req_data: ReplyBase, post_id: int, db: db_dependency, authorization: str = Header(None)):
+    # verify_authorization(authorization)
+    reply = models.PostReply(author=req_data.author, content=req_data.content, date=req_data.date, post=req_data.post)
+    db.add(reply)
+    db.commit()
