@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { goto } from "$app/navigation";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_PATH,
@@ -39,7 +40,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         console.error('Error refreshing token:', refreshError);
-        throw refreshError;
+        goto('/login');
       }
     }
 
