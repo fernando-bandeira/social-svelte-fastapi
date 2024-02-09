@@ -1,14 +1,6 @@
 <script>
-  import {
-    Paper,
-    Text,
-    Checkbox,
-    Button,
-    Textarea,
-    Skeleton,
-  } from "@svelteuidev/core";
+  import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
   import api from "../utils/api";
-  import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
   import { Trash, Pencil1, Update } from "radix-icons-svelte";
@@ -23,21 +15,13 @@
   export let content;
   export let edited;
   export let repost;
-  export let reference;
-
-  let liked = false;
-  let likeCount;
-  let loadingLikeFetch = true;
-
-  let originalPostData;
-  let loadingOriginalPostFetch = true;
+  export let originalAuthor;
+  export let tags;
+  export let likeCount;
+  export let liked;
 
   let editing = false;
   let editedContent = content;
-
-  let processedPost = content;
-  let tags = [];
-  let loadingPostProcessing = true;
 
   const fetchLike = async () => {
     const resLiked = await api.get(`/${userId}/likes/${id}/`);
@@ -46,50 +30,6 @@
     likeCount = resCount.data.count;
     loadingLikeFetch = false;
   };
-
-  const fetchOriginalPost = async () => {
-    if (repost) {
-      const res = await api.get(`/post/${reference}/`);
-      originalPostData = res.data;
-    }
-    loadingOriginalPostFetch = false;
-  };
-
-  const processPostTags = async () => {
-    let target;
-    const regex = /@(\w+)@/g;
-    if (repost) {
-      target = originalPostData.content;
-    } else {
-      target = content;
-    }
-    const matches = target.match(regex);
-    if (matches) {
-      tags = await Promise.all(
-        matches.map(async (match) => {
-          const word = match.substring(1, match.length - 1);
-          try {
-            const res = await api.get(`/user/${word}/`);
-            return { id: res.data.id, name: res.data.name };
-          } catch (err) {
-            return match;
-          }
-        }),
-      );
-      processedPost = target.replace(regex, () => {
-        return "@tag@";
-      });
-    } else {
-      processedPost = target;
-    }
-    loadingPostProcessing = false;
-  };
-
-  onMount(async () => {
-    fetchLike();
-    await fetchOriginalPost();
-    processPostTags();
-  });
 
   const handleLike = async () => {
     if (liked) {
@@ -105,9 +45,9 @@
       content: editedContent,
       author: userId,
       date: date,
+      repost: false,
+      reference: null,
     });
-    const res = await api.get(`/post/${id}/`);
-    content = res.data.content;
     dispatch("update");
   };
 
@@ -134,27 +74,24 @@
   <Paper>
     <div id="post-info">
       <div style="width: 100%">
-        {#if repost && !loadingOriginalPostFetch}
+        {#if repost}
           <div id="repost-title">
             <Update />
             <Text>
               <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
-              <a href={`/profile/${originalPostData?.author?.id}/`}>
-                {originalPostData?.author?.name}
+              <a href={`/profile/${originalAuthor.id}/`}>
+                {originalAuthor.name}
               </a>
               em {date}
             </Text>
           </div>
-          <hr />
-        {:else if loadingOriginalPostFetch}
-          <Skeleton height={20} radius="xl" />
         {:else}
           <Text>
             <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+            {#if edited}
+              (Editado)
+            {/if}
           </Text>
-        {/if}
-        {#if edited}
-          (Editado)
         {/if}
         <br />
         {#if editing}
@@ -181,10 +118,10 @@
               </Button>
             </div>
           </div>
-        {:else if !loadingPostProcessing}
-          <Text><ProcessedPost {tags} {processedPost} /></Text>
         {:else}
-          <Skeleton height={20} radius="xl" />
+          {#key content}
+            <Text><ProcessedPost {tags} {content} /></Text>
+          {/key}
         {/if}
         <br />
       </div>
@@ -205,14 +142,10 @@
         <Button on:click={handleRepost}>Repostar</Button>
       {/if}
     </div>
-    {#if loadingLikeFetch}
-      <Skeleton circle height={25} />
-    {:else}
-      <div id="like-section">
-        <Checkbox checked={liked} on:input={handleLike} />
-        <Text>{likeCount}</Text>
-      </div>
-    {/if}
+    <div id="like-section">
+      <Checkbox checked={liked} on:input={handleLike} />
+      <Text>{likeCount}</Text>
+    </div>
   </Paper>
 </div>
 

@@ -11,6 +11,7 @@ import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, not_, or_, and_
+import re
 
 origins = [
     'http://localhost:5173',
@@ -39,20 +40,84 @@ def generate_token(user_id, email, exp):
     return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
 
-def verify_authorization(token: str, authorized_users: list = []):
+def get_user_from_token(token: str):
     try:
         if 'Bearer ' in token:
             token = token.split('Bearer ')[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        if payload['user_id'] in authorized_users or authorized_users == []:
-            return payload
-        raise HTTPException(status_code=403, detail='Forbidden access')
+        return payload['user_id']
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail='Expired token.')
     except (jwt.InvalidTokenError, ValueError):
         raise HTTPException(status_code=401, detail='Invalid token.')
     except Exception:
         raise HTTPException(status_code=401, detail='Forbidden access')
+
+
+def verify_authorization(token: str, authorized_users: list = []):
+    user_id = get_user_from_token(token)
+    if user_id in authorized_users or authorized_users == []:
+        return user_id
+    raise HTTPException(status_code=403, detail='Forbidden access')
+
+
+def get_tags(content, db):
+    pattern = r'@([^@]+)@'
+    matches = re.findall(pattern, content)
+    tags = []
+    for match in matches:
+        try:
+            match = int(match)
+            tagged_user = db.query(models.User).filter(models.User.id == match).first()
+            if tagged_user:
+                tags.append({
+                    'id': tagged_user.id,
+                    'name': tagged_user.name
+                })
+            else:
+                tags.append(match)
+        except ValueError:
+            tags.append(match)
+    return tags
+
+
+def generate_post_payload(post, user_id, author, db):
+    if post.repost:
+        original_post = db.query(models.Post).filter(
+            models.Post.id == post.reference
+        ).first()
+        content = original_post.content
+    else:
+        content = post.content
+    tags = get_tags(content, db)
+
+    likeCount = db.query(models.PostLike).filter(models.PostLike.post == post.id).count()
+    liked = db.query(models.PostLike).filter(
+        models.PostLike.post == post.id,
+        models.PostLike.user == user_id
+    ).first()
+
+    payload = {
+        'id': post.id,
+        'author': {
+            'id': author.id,
+            'name': author.name,
+        },
+        'content': content,
+        'date': post.date,
+        'edited': post.edited,
+        'repost': post.repost,
+        'tags': tags,
+        'likeCount': likeCount,
+        'liked': bool(liked)
+    }
+    if post.repost:
+        original_author = db.query(models.User).filter(models.User.id == original_post.author).first()
+        payload['author']['original'] = {
+            'id': original_author.id,
+            'name': original_author.name
+        }
+    return payload
 
 
 app = FastAPI()
@@ -208,51 +273,25 @@ def delete_post(post_id: int, db: db_dependency, authorization: str = Header(Non
         db.commit()
 
 
-@app.get('/post/{post_id}/')
-def get_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
-    db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
-    db_user = db.query(models.User).filter(models.User.id == db_post.author).first()
-    verify_authorization(authorization)
-    return {
-        'id': db_post.id,
-        'author': {
-            'id': db_user.id,
-            'name': db_user.name,
-        },
-        'content': db_post.content,
-        'date': db_post.date,
-        'edited': db_post.edited,
-        'repost': db_post.repost,
-        'reference': db_post.reference
-    }
-
-
 @app.get('/posts/{user_id}/')
 def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     db_posts = db.query(models.Post).filter(models.Post.author == user_id).order_by(desc(models.Post.id)).all()
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
-    response_payload = [{
-        'id': post.id,
-        'author': {
-            'id': db_user.id,
-            'name': db_user.name,
-        },
-        'content': post.content,
-        'date': post.date,
-        'edited': post.edited,
-        'repost': post.repost,
-        'reference': post.reference
-    } for post in db_posts]
+    response_payload = []
+    visiting_user = get_user_from_token(authorization)
+    for post in db_posts:
+        payload = generate_post_payload(post, visiting_user, db_user, db)
+        response_payload.append(payload)
     return response_payload
 
 
 @app.get('/users/')
 def search_users(name: str, db: db_dependency, authorization: str = Header(None)):
-    payload = verify_authorization(authorization)
+    user_id = verify_authorization(authorization)
     users = db.query(models.User).filter(
         models.User.name.ilike(f'%{name}%'),
-        models.User.id != payload['user_id']
+        models.User.id != user_id
     ).all()
     return users
 
@@ -260,8 +299,50 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
 @app.get('/user/{user_id}/')
 def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
+    visiting_user = get_user_from_token(authorization)
+
+    followers_count = db.query(models.FollowRelation).filter(
+        models.FollowRelation.approver == user_id,
+        models.FollowRelation.approved
+    ).count()
+
+    following_count = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == user_id,
+        models.FollowRelation.approved
+    ).count()
+
+    f1 = aliased(models.FollowRelation)
+    f2 = aliased(models.FollowRelation)
+    mutual_count = db.query(f1).join(f2, f1.requester == f2.requester).filter(
+        f1.approved,
+        f2.approved,
+        or_(
+            and_(f1.approver == user_id, f2.approver == user_id),
+            and_(f1.approver == user_id, f2.approver == visiting_user),
+        )
+    ).distinct().count()
+
+    follow_request = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == visiting_user,
+        models.FollowRelation.approver == user_id
+    ).first()
+    requested = follow_request is not None
+    approved = follow_request.approved if requested else False
+
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    return user
+    payload = {
+        'id': user.id,
+        'name': user.name,
+        'public': user.public,
+        'follow_info': {
+            'followers': followers_count,
+            'following': following_count,
+            'mutual': mutual_count,
+            'requested': requested,
+            'approved': approved
+        }
+    }
+    return payload
 
 
 @app.get('/{user_1}/follows/{user_2}/')
@@ -379,19 +460,8 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
     response_payload = []
     for post in followed_users_posts:
         db_user = db.query(models.User).filter(models.User.id == post.author).first()
-        response_payload.append({
-            'id': post.id,
-            'author': {
-                'id': db_user.id,
-                'name': db_user.name,
-            },
-            'content': post.content,
-            'date': post.date,
-            'edited': post.edited,
-            'repost': post.repost,
-            'reference': post.reference
-        })
-
+        payload = generate_post_payload(post, user_id, db_user, db)
+        response_payload.append(payload)
     return response_payload
 
 

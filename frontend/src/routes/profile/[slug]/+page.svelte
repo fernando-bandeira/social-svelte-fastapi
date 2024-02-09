@@ -15,29 +15,24 @@
   });
 
   let profileData;
-  let followersInfo;
-  let relationData;
+  let followData;
   let posts;
   let loading = true;
 
   const fetchData = async () => {
     if (user?.id) {
-      const resProfile = await api.get(`/user/${profileId}`);
-      profileData = resProfile.data;
-      const resRelation = await api.get(`/${user.id}/follows/${profileId}/`);
-      relationData = resRelation.data;
+      loading = true;
+      const res = await api.get(`/user/${profileId}/`);
+      profileData = res.data;
+      followData = profileData.follow_info;
       if (
-        relationData?.approved ||
+        followData?.approved ||
         user.id === profileId ||
         profileData.public
       ) {
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
-      const resFollowersInfo = await api.get(
-        `/profile-info/${user.id}/${profileId}/`,
-      );
-      followersInfo = resFollowersInfo.data;
       loading = false;
     }
   };
@@ -64,9 +59,9 @@
           <Title>{profileData.name}</Title>
           <div id="profile-info">
             {#if user.id !== profileId}
-              {#if relationData?.approved}
+              {#if followData?.approved}
                 <Button color="red" on:click={unfollow}>Parar de seguir</Button>
-              {:else if relationData?.requested}
+              {:else if followData?.requested}
                 <Button color="red" on:click={unfollow}
                   >Cancelar solicitação</Button
                 >
@@ -75,15 +70,15 @@
               {/if}
             {/if}
             <Text>
-              Seguidores: {followersInfo.followers} | Seguindo: {followersInfo.following}
+              Seguidores: {followData.followers} | Seguindo: {followData.following}
               {#if profileId !== user.id}
-                | Seguidores em comum: {followersInfo.mutual}
+                | Seguidores em comum: {followData.mutual}
               {/if}
             </Text>
           </div>
         </div>
         <hr />
-        {#if relationData?.approved || user.id === profileId || profileData.public}
+        {#if followData?.approved || user.id === profileId || profileData.public}
           {#each posts as post (post.id)}
             <Post
               id={post.id}
@@ -93,7 +88,10 @@
               date={post.date}
               edited={post.edited}
               repost={post.repost}
-              reference={post.reference}
+              originalAuthor={post.author.original}
+              tags={post.tags}
+              likeCount={post.likeCount}
+              liked={post.liked}
               on:update={fetchData}
             />
           {/each}

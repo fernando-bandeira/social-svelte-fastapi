@@ -35,7 +35,6 @@
   };
 
   let post;
-  let processedPost;
   const createPost = async () => {
     await api.post("/create-post/", {
       content: post,
@@ -105,7 +104,10 @@
           date={post.date}
           edited={post.edited}
           repost={post.repost}
-          reference={post.reference}
+          originalAuthor={post.author.original}
+          tags={post.tags}
+          likeCount={post.likeCount}
+          liked={post.liked}
           on:update={fetchData}
         />
       {/each}
