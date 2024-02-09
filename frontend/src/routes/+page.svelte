@@ -35,7 +35,6 @@
   };
 
   let post;
-  let processedPost;
   const createPost = async () => {
     await api.post("/create-post/", {
       content: post,

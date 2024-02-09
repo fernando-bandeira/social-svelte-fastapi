@@ -1,14 +1,6 @@
 <script>
-  import {
-    Paper,
-    Text,
-    Checkbox,
-    Button,
-    Textarea,
-    Skeleton,
-  } from "@svelteuidev/core";
+  import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
   import api from "../utils/api";
-  import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
   import { Trash, Pencil1, Update } from "radix-icons-svelte";
@@ -53,6 +45,8 @@
       content: editedContent,
       author: userId,
       date: date,
+      repost: false,
+      reference: null,
     });
     dispatch("update");
   };
@@ -91,14 +85,13 @@
               em {date}
             </Text>
           </div>
-          <hr />
         {:else}
           <Text>
             <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+            {#if edited}
+              (Editado)
+            {/if}
           </Text>
-        {/if}
-        {#if edited}
-          (Editado)
         {/if}
         <br />
         {#if editing}
@@ -126,7 +119,9 @@
             </div>
           </div>
         {:else}
-          <Text><ProcessedPost {tags} {content} /></Text>
+          {#key content}
+            <Text><ProcessedPost {tags} {content} /></Text>
+          {/key}
         {/if}
         <br />
       </div>
