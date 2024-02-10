@@ -12,6 +12,7 @@ import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, not_, or_, and_
 import re
+from time import sleep
 
 origins = [
     'http://localhost:5173',
@@ -21,7 +22,7 @@ origins = [
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-ACCESS_EXP = 30 * 60
+ACCESS_EXP = 5 * 60
 REFRESH_EXP = 30 * 60
 
 
@@ -535,6 +536,7 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
             'content': reply.content,
             'date': reply.date,
         })
+    sleep(5)
     return response_payload
 
 

@@ -9,9 +9,25 @@
     Modal,
     TextInput,
     Text,
+    Alert,
   } from "@svelteuidev/core";
+  import { Check, Cross2 } from "radix-icons-svelte";
   import Header from "../components/Header.svelte";
   import Post from "../components/Post.svelte";
+
+  let showSuccessMessage = false;
+  let showErrorMessage = false;
+  let alertMessage;
+
+  const handleAlert = (isError, msg) => {
+    alertMessage = msg;
+    showErrorMessage = isError;
+    showSuccessMessage = !isError;
+    setTimeout(() => {
+      showErrorMessage = false;
+      showSuccessMessage = false;
+    }, 5000);
+  };
 
   let user;
   userContext.subscribe((value) => {
@@ -36,14 +52,19 @@
 
   let post;
   const createPost = async () => {
-    await api.post("/create-post/", {
-      content: post,
-      author: user.id,
-      date: new Date().toLocaleString("en-GB"),
-      repost: false,
-      reference: null,
-    });
-    post = "";
+    try {
+      await api.post("/create-post/", {
+        content: post,
+        author: user.id,
+        date: new Date().toLocaleString("en-GB"),
+        repost: false,
+        reference: null,
+      });
+      post = "";
+      handleAlert(false, "Publicação realizada com sucesso!");
+    } catch (err) {
+      handleAlert(true, "Erro ao publicar.");
+    }
     fetchData();
   };
 
@@ -61,6 +82,21 @@
 
 <AuthWrapper>
   <Header userId={user?.id} />
+  <div style="position: fixed; bottom: 40px; right: 20px">
+    {#if showSuccessMessage || showErrorMessage}
+      <Alert
+        color={showSuccessMessage ? "teal" : "red"}
+        icon={showSuccessMessage ? Check : Cross2}
+        withCloseButton
+        on:close={() => {
+          showSuccessMessage = false;
+          showErrorMessage = false;
+        }}
+      >
+        {alertMessage}
+      </Alert>
+    {/if}
+  </div>
   <Modal
     opened={tagUsersModalOpened}
     on:close={() => (tagUsersModalOpened = false)}
