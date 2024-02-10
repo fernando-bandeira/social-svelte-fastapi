@@ -5,6 +5,7 @@
   import { focus } from "@svelteuidev/composables";
   import { Trash, Pencil1, Update } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
+  import ReplySection from "./ReplySection.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -146,6 +147,8 @@
       <Checkbox checked={liked} on:input={handleLike} />
       <Text>{likeCount}</Text>
     </div>
+    <hr />
+    <ReplySection {id} {userId} />
   </Paper>
 </div>
 
