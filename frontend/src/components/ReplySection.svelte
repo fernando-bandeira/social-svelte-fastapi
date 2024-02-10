@@ -1,5 +1,6 @@
 <script>
   import { Button, Collapse, Textarea, Text, Center } from "@svelteuidev/core";
+  import { ChatBubble } from "radix-icons-svelte";
   import api from "../utils/api";
   import Reply from "./Reply.svelte";
 
@@ -60,7 +61,13 @@
     {showReplies ? "Ocultar" : "Exibir"} respostas
   </Button>
   {#if !showReplyInput}
-    <Button on:click={() => (showReplyInput = true)}>Responder</Button>
+    <Button
+      on:click={() => (showReplyInput = true)}
+      variant="outline"
+    >
+      <ChatBubble slot="leftIcon" />
+      Responder
+    </Button>
   {/if}
 </div>
 <Collapse open={showReplyInput}>

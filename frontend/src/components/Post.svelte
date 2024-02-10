@@ -1,5 +1,13 @@
 <script>
-  import { Paper, Text, Checkbox, Button, Textarea } from "@svelteuidev/core";
+  import {
+    Paper,
+    Text,
+    Checkbox,
+    Button,
+    Textarea,
+    Menu,
+    ActionIcon,
+  } from "@svelteuidev/core";
   import api from "../utils/api";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
@@ -127,20 +135,24 @@
         <br />
       </div>
       {#if userId === author.id}
-        <div id="actions">
+        <Menu>
           {#if !repost}
-            <Button on:click={() => (editing = true)} disabled={editing}>
-              <Pencil1 slot="leftIcon" />
+            <Menu.Item
+              on:click={() => (editing = true)}
+              disabled={editing}
+              icon={Pencil1}
+            >
               Editar
-            </Button>
+            </Menu.Item>
           {/if}
-          <Button color="red" on:click={deletePost}>
-            <Trash slot="leftIcon" />
+          <Menu.Item color="red" icon={Trash} on:click={deletePost}>
             Excluir
-          </Button>
-        </div>
+          </Menu.Item>
+        </Menu>
       {:else if !repost}
-        <Button on:click={handleRepost}>Repostar</Button>
+        <ActionIcon on:click={handleRepost}>
+          <Update />
+        </ActionIcon>
       {/if}
     </div>
     <div id="like-section">
@@ -165,11 +177,6 @@
     display: flex;
     align-items: center;
     gap: 5px;
-  }
-  #actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
   }
   #edit-section {
     display: flex;
