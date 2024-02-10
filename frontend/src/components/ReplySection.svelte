@@ -1,5 +1,5 @@
 <script>
-  import { Button, Collapse, Textarea } from "@svelteuidev/core";
+  import { Button, Collapse, Textarea, Text, Center } from "@svelteuidev/core";
   import api from "../utils/api";
   import Reply from "./Reply.svelte";
 
@@ -45,9 +45,15 @@
 </script>
 
 <Collapse open={showReplies}>
-  {#each replies as reply (reply.id)}
-    <Reply {...reply} />
-  {/each}
+  {#if replies.length > 0}
+    {#each replies as reply (reply.id)}
+      <Reply {...reply} />
+    {/each}
+  {:else}
+    <Center>
+      <Text>Não há respostas.</Text>
+    </Center>
+  {/if}
 </Collapse>
 <div>
   <Button on:click={handleCollapse} {loading}>
