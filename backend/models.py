@@ -12,10 +12,11 @@ class User(Base):
     password = Column(String)
     public = Column(Boolean, default=False)
 
-    post = relationship('Post', cascade='all,delete', backref='parent')
-    follow = relationship('FollowRelation', cascade='all,delete', backref='parent')
-    like = relationship('PostLike', cascade='all,delete', backref='parent')
-    reply = relationship('PostReply', cascade='all,delete', backref='parent')
+    post = relationship('Post', cascade='all,delete', backref='user_post')
+    followed = relationship('FollowRelation', foreign_keys='FollowRelation.approver', backref='followed')
+    follower = relationship('FollowRelation', foreign_keys='FollowRelation.requester', backref='follower')
+    like = relationship('PostLike', cascade='all,delete', backref='user_like')
+    reply = relationship('PostReply', cascade='all,delete', backref='user_reply')
 
 
 class TokenBlacklist(Base):
@@ -36,8 +37,8 @@ class Post(Base):
     repost = Column(Boolean)
     reference = Column(Integer, ForeignKey('posts.id'), index=True)
 
-    like = relationship('PostLike', cascade='all,delete', backref='parent')
-    reply = relationship('PostReply', cascade='all,delete', backref='parent')
+    like = relationship('PostLike', cascade='all,delete', backref='post_like')
+    reply = relationship('PostReply', cascade='all,delete', backref='post_reply')
 
 
 class FollowRelation(Base):
