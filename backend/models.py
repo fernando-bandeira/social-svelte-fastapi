@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -10,6 +11,11 @@ class User(Base):
     email = Column(String, index=True, unique=True)
     password = Column(String)
     public = Column(Boolean, default=False)
+
+    post = relationship('Post', cascade='all,delete', backref='parent')
+    follow = relationship('FollowRelation', cascade='all,delete', backref='parent')
+    like = relationship('PostLike', cascade='all,delete', backref='parent')
+    reply = relationship('PostReply', cascade='all,delete', backref='parent')
 
 
 class TokenBlacklist(Base):
@@ -29,6 +35,9 @@ class Post(Base):
     edited = Column(Boolean)
     repost = Column(Boolean)
     reference = Column(Integer, ForeignKey('posts.id'), index=True)
+
+    like = relationship('PostLike', cascade='all,delete', backref='parent')
+    reply = relationship('PostReply', cascade='all,delete', backref='parent')
 
 
 class FollowRelation(Base):
