@@ -138,20 +138,7 @@
       </form>
       <hr />
       {#each posts as post (post.id)}
-        <Post
-          id={post.id}
-          userId={user?.id}
-          author={post.author}
-          content={post.content}
-          date={post.date}
-          edited={post.edited}
-          repost={post.repost}
-          originalAuthor={post.author.original}
-          tags={post.tags}
-          likeCount={post.likeCount}
-          liked={post.liked}
-          on:update={fetchData}
-        />
+        <Post userId={user?.id} {...post} on:update={fetchData} />
       {/each}
     </Paper>
   </div>

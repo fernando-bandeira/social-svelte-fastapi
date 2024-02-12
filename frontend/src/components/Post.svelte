@@ -25,7 +25,6 @@
   export let content;
   export let edited;
   export let repost;
-  export let originalAuthor;
   export let tags;
   export let likeCount;
   export let liked;
@@ -128,8 +127,8 @@
             <Update />
             <Text>
               <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
-              <a href={`/profile/${originalAuthor.id}/`}>
-                {originalAuthor.name}
+              <a href={`/profile/${author.original.id}/`}>
+                {author.original.name}
               </a>
               em {date}
             </Text>

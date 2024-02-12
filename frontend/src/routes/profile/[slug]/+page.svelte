@@ -25,11 +25,7 @@
       const res = await api.get(`/user/${profileId}/`);
       profileData = res.data;
       followData = profileData.followInfo;
-      if (
-        followData?.approved ||
-        user.id === profileId ||
-        profileData.public
-      ) {
+      if (followData?.approved || user.id === profileId || profileData.public) {
         const resPosts = await api.get(`/posts/${profileId}/`);
         posts = resPosts.data;
       }
@@ -80,20 +76,7 @@
         <hr />
         {#if followData?.approved || user.id === profileId || profileData.public}
           {#each posts as post (post.id)}
-            <Post
-              id={post.id}
-              userId={user?.id}
-              author={post.author}
-              content={post.content}
-              date={post.date}
-              edited={post.edited}
-              repost={post.repost}
-              originalAuthor={post.author.original}
-              tags={post.tags}
-              likeCount={post.likeCount}
-              liked={post.liked}
-              on:update={fetchData}
-            />
+            <Post userId={user?.id} {...post} on:update={fetchData} />
           {/each}
         {:else}
           Você não segue esse usuário.
