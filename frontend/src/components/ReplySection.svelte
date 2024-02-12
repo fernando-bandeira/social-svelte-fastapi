@@ -88,7 +88,7 @@
     gap: 10px;
   }
   #reply-section {
-    margin-top: 10px;
+    padding-top: 10px;
     flex-direction: column;
   }
   #reply-buttons {
