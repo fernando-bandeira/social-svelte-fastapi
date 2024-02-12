@@ -24,7 +24,7 @@
       loading = true;
       const res = await api.get(`/user/${profileId}/`);
       profileData = res.data;
-      followData = profileData.follow_info;
+      followData = profileData.followInfo;
       if (
         followData?.approved ||
         user.id === profileId ||

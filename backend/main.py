@@ -356,7 +356,7 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
         'id': user.id,
         'name': user.name,
         'public': user.public,
-        'follow_info': {
+        'followInfo': {
             'followers': followers_count,
             'following': following_count,
             'mutual': mutual_count,
