@@ -91,7 +91,7 @@ def generate_post_payload(post, user_id, author, db):
         content = post.content
     tags = get_tags(content, db)
 
-    likeCount = db.query(models.PostLike).filter(models.PostLike.post == post.id).count()
+    like_count = db.query(models.PostLike).filter(models.PostLike.post == post.id).count()
     liked = db.query(models.PostLike).filter(
         models.PostLike.post == post.id,
         models.PostLike.user == user_id
@@ -108,7 +108,7 @@ def generate_post_payload(post, user_id, author, db):
         'edited': post.edited,
         'repost': post.repost,
         'tags': tags,
-        'likeCount': likeCount,
+        'likeCount': like_count,
         'liked': bool(liked)
     }
     if post.repost:
@@ -118,6 +118,21 @@ def generate_post_payload(post, user_id, author, db):
             'name': original_author.name
         }
     return payload
+
+
+def get_mutual_followers_qty(user1, user2, db):
+    f1 = aliased(models.FollowRelation)
+    f2 = aliased(models.FollowRelation)
+    mutual_count = db.query(f1).join(f2, f1.requester == f2.requester).filter(
+        f1.approved,
+        f2.approved,
+        or_(
+            and_(f1.approver == user1, f2.approver == user2),
+            and_(f1.approver == user2, f2.approver == user1),
+        )
+    ).distinct().count()
+
+    return mutual_count / 2
 
 
 app = FastAPI()
@@ -300,7 +315,16 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
         models.User.name.ilike(f'%{name}%'),
         models.User.id != user_id
     ).all()
-    return users
+    response_payload = []
+    for user in users:
+        payload = {
+            'id': user.id,
+            'name': user.name,
+            'public': user.public,
+            'mutual': get_mutual_followers_qty(user.id, user_id, db)
+        }
+        response_payload.append(payload)
+    return sorted(response_payload, key=lambda u: u['mutual'], reverse=True)
 
 
 @app.get('/user/{user_id}/')
@@ -318,16 +342,7 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
         models.FollowRelation.approved
     ).count()
 
-    f1 = aliased(models.FollowRelation)
-    f2 = aliased(models.FollowRelation)
-    mutual_count = db.query(f1).join(f2, f1.requester == f2.requester).filter(
-        f1.approved,
-        f2.approved,
-        or_(
-            and_(f1.approver == user_id, f2.approver == user_id),
-            and_(f1.approver == user_id, f2.approver == visiting_user),
-        )
-    ).distinct().count()
+    mutual_count = get_mutual_followers_qty(visiting_user, user_id, db)
 
     follow_request = db.query(models.FollowRelation).filter(
         models.FollowRelation.requester == visiting_user,
@@ -486,22 +501,12 @@ def get_followers_qty(user_id: int, profile_id: int, db: db_dependency, authoriz
         models.FollowRelation.approved
     ).count()
 
-    f1 = aliased(models.FollowRelation)
-    f2 = aliased(models.FollowRelation)
-
-    db_mutual = db.query(f1).join(f2, f1.requester == f2.requester).filter(
-        f1.approved,
-        f2.approved,
-        or_(
-            and_(f1.approver == user_id, f2.approver == profile_id),
-            and_(f1.approver == profile_id, f2.approver == user_id),
-        )
-    ).distinct().count()
+    db_mutual = get_mutual_followers_qty(user_id, profile_id, db)
 
     return {
         'followers': db_followers,
         'following': db_following,
-        'mutual': db_mutual / 2
+        'mutual': db_mutual
     }
 
 
