@@ -58,9 +58,12 @@
   />
   <div id="users-list">
     {#each users as user (user.id)}
-      <Paper>
-        <Text><a href={`/profile/${user.id}/`}>{user.name}</a></Text>
-      </Paper>
+      <div class="user-card">
+        <Paper>
+          <Text><a href={`/profile/${user.id}/`}>{user.name}</a></Text>
+          <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
+        </Paper>
+      </div>
     {/each}
   </div>
 </Modal>
@@ -147,6 +150,9 @@
   }
   #users-list {
     margin-top: 20px;
+  }
+  .user-card {
+    margin: 5px 0;
   }
   .request-card {
     display: flex;

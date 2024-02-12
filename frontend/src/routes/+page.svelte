@@ -10,6 +10,7 @@
     TextInput,
     Text,
     Alert,
+    Box,
   } from "@svelteuidev/core";
   import { Check, Cross2 } from "radix-icons-svelte";
   import Header from "../components/Header.svelte";
@@ -110,16 +111,21 @@
     />
     <div id="users-list">
       {#each users as user (user.id)}
-        <Paper>
-          <Text
+        <div class="user-card">
+          <Box
             on:click={() => {
               post = post + `${user.id}@ `;
               tagUsersModalOpened = false;
             }}
           >
-            {user.name}
-          </Text>
-        </Paper>
+            <Paper>
+              <Text>
+                {user.name}
+              </Text>
+              <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
+            </Paper>
+          </Box>
+        </div>
       {/each}
     </div>
   </Modal>
@@ -155,5 +161,9 @@
   #box {
     width: 900px;
     margin: 0 auto;
+  }
+  .user-card {
+    margin: 5px 0;
+    cursor: pointer;
   }
 </style>
