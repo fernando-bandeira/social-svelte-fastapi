@@ -123,7 +123,7 @@ def generate_post_payload(post, user_id, author, db):
 def get_mutual_followers_qty(user1, user2, db):
     f1 = aliased(models.FollowRelation)
     f2 = aliased(models.FollowRelation)
-    mutual_count = db.query(f1).join(f2, f1.requester == f2.requester).filter(
+    mutual_count = db.query(f1.requester).join(f2, f1.requester == f2.requester).filter(
         f1.approved,
         f2.approved,
         or_(
@@ -132,7 +132,7 @@ def get_mutual_followers_qty(user1, user2, db):
         )
     ).distinct().count()
 
-    return mutual_count / 2
+    return mutual_count
 
 
 app = FastAPI()
