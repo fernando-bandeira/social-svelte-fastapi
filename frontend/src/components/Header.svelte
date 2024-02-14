@@ -26,7 +26,7 @@
 
   const getFollowRequests = async () => {
     if (userId) {
-      const res = await api.get(`/requests/${userId}/`);
+      const res = await api.get(`/follows/requests/${userId}/`);
       followRequests = res.data;
     }
   };
@@ -34,12 +34,12 @@
   $: userId, getFollowRequests();
 
   const approve = async (otherUser) => {
-    await api.put(`/${userId}/approves/${otherUser}/`);
+    await api.put(`/follows/${otherUser}/${userId}/`);
     getFollowRequests();
   };
 
   const unfollow = async (otherUser) => {
-    await api.delete(`/${otherUser}/follows/${userId}/`);
+    await api.delete(`/follows/${otherUser}/${userId}/`);
     getFollowRequests();
   };
 </script>

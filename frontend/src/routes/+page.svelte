@@ -54,7 +54,7 @@
   let post;
   const createPost = async () => {
     try {
-      await api.post("/create-post/", {
+      await api.post("/posts/", {
         content: post,
         author: user.id,
         date: new Date().toLocaleString("en-GB"),

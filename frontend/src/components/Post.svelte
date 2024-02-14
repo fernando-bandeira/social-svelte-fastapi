@@ -47,25 +47,25 @@
   let editedContent = content;
 
   const fetchLike = async () => {
-    const resLiked = await api.get(`/${userId}/likes/${id}/`);
+    const resLiked = await api.get(`/likes/${userId}/${id}/`);
     liked = resLiked.data.like;
-    const resCount = await api.get(`/likes/${id}/`);
+    const resCount = await api.get(`/likes/post/${id}/`);
     likeCount = resCount.data.count;
     loadingLikeFetch = false;
   };
 
   const handleLike = async () => {
     if (liked) {
-      await api.delete(`/${userId}/likes/${id}/`);
+      await api.delete(`/likes/${userId}/${id}/`);
     } else {
-      await api.post(`/${userId}/likes/${id}/`);
+      await api.post(`/likes/${userId}/${id}/`);
     }
     fetchLike();
   };
 
   const updatePost = async () => {
     try {
-      await api.put(`/edit-post/${id}/`, {
+      await api.put(`/posts/${id}/`, {
         content: editedContent,
         author: userId,
         date: date,
@@ -82,7 +82,7 @@
   const deletePost = async () => {
     if (window.confirm("Deseja realmente excluir este post?")) {
       try {
-        await api.delete(`/delete-post/${id}/`);
+        await api.delete(`/posts/${id}/`);
         dispatch("update");
         handleAlert(false, "Publicação excluída com sucesso!");
       } catch (err) {
@@ -92,7 +92,7 @@
   };
 
   const handleRepost = async () => {
-    await api.post("/create-post/", {
+    await api.post("/posts/", {
       author: userId,
       content: "",
       date: new Date().toLocaleString("en-GB"),

@@ -261,7 +261,7 @@ def logout(req_data: LogoutBase, db: db_dependency):
     db.commit()
 
 
-@app.post('/create-post/')
+@app.post('/posts/')
 def create_post(req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
     db_post = models.Post(
@@ -276,7 +276,7 @@ def create_post(req_data: PostBase, db: db_dependency, authorization: str = Head
     db.commit()
 
 
-@app.put('/edit-post/{post_id}/')
+@app.put('/posts/{post_id}/')
 def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
@@ -286,7 +286,7 @@ def edit_post(post_id: int, req_data: PostBase, db: db_dependency, authorization
         db.commit()
 
 
-@app.delete('/delete-post/{post_id}/')
+@app.delete('/posts/{post_id}/')
 def delete_post(post_id: int, db: db_dependency, authorization: str = Header(None)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if db_post:
@@ -295,7 +295,7 @@ def delete_post(post_id: int, db: db_dependency, authorization: str = Header(Non
         db.commit()
 
 
-@app.get('/posts/{user_id}/')
+@app.get('/posts/user/{user_id}/')
 def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     db_posts = db.query(models.Post).filter(models.Post.author == user_id).order_by(desc(models.Post.id)).all()
@@ -327,7 +327,7 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
     return sorted(response_payload, key=lambda u: u['mutual'], reverse=True)
 
 
-@app.get('/user/{user_id}/')
+@app.get('/users/{user_id}/')
 def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     visiting_user = get_user_from_token(authorization)
@@ -367,40 +367,40 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
     return payload
 
 
-@app.post('/{user_1}/follows/{user_2}/')
-def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization, [user_1])
-    db_approver = db.query(models.User).filter(models.User.id == user_2).first()
-    db_follow = models.FollowRelation(requester=user_1, approver=user_2, approved=db_approver.public)
+@app.post('/follows/{requester}/{approver}/')
+def follow(requester: int, approver: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [requester])
+    db_approver = db.query(models.User).filter(models.User.id == approver).first()
+    db_follow = models.FollowRelation(requester=requester, approver=approver, approved=db_approver.public)
     db.add(db_follow)
     db.commit()
 
 
-@app.delete('/{user_1}/follows/{user_2}/')
-def unfollow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization, [user_1, user_2])
+@app.delete('/follows/{requester}/{approver}/')
+def unfollow(requester: int, approver: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [requester, approver])
     result = db.query(models.FollowRelation).filter(
-        models.FollowRelation.requester == user_1,
-        models.FollowRelation.approver == user_2
+        models.FollowRelation.requester == requester,
+        models.FollowRelation.approver == approver
     ).first()
     if result:
         db.delete(result)
         db.commit()
 
 
-@app.put('/{user_1}/approves/{user_2}/')
-def approve(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization, [user_1])
+@app.put('/follows/{requester}/{approver}/')
+def approve(requester: int, approver: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization, [approver])
     db_relation = db.query(models.FollowRelation).filter(
-        models.FollowRelation.approver == user_1,
-        models.FollowRelation.requester == user_2
+        models.FollowRelation.approver == approver,
+        models.FollowRelation.requester == requester
     ).first()
     if db_relation:
         db_relation.approved = True
         db.commit()
 
 
-@app.get('/requests/{user_id}/')
+@app.get('/follows/requests/{user_id}/')
 def get_requests(user_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [user_id])
     db_requests = db.query(models.FollowRelation).filter(
@@ -418,7 +418,19 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
     return response_payload
 
 
-@app.get('/{user_id}/likes/{post_id}/')
+@app.get('/likes/post/{post_id}/')
+def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization)
+    db_likes = db.query(models.PostLike).filter(
+        models.PostLike.post == post_id
+    ).count()
+
+    return {
+        'count': db_likes
+    }
+
+
+@app.get('/likes/{user_id}/{post_id}/')
 def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     db_like = db.query(models.PostLike).filter(
@@ -430,7 +442,7 @@ def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str
     }
 
 
-@app.post('/{user_id}/likes/{post_id}/')
+@app.post('/likes/{user_id}/{post_id}/')
 def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [user_id])
     db_like = models.PostLike(user=user_id, post=post_id)
@@ -438,7 +450,7 @@ def like_post(user_id: int, post_id: int, db: db_dependency, authorization: str 
     db.commit()
 
 
-@app.delete('/{user_id}/likes/{post_id}/')
+@app.delete('/likes/{user_id}/{post_id}/')
 def remove_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [user_id])
     db_like = db.query(models.PostLike).filter(
@@ -472,18 +484,6 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
     return response_payload
 
 
-@app.get('/likes/{post_id}/')
-def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
-    db_likes = db.query(models.PostLike).filter(
-        models.PostLike.post == post_id
-    ).count()
-
-    return {
-        'count': db_likes
-    }
-
-
 @app.get('/replies/{post_id}/')
 def get_replies(post_id: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
@@ -505,7 +505,7 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
     return response_payload
 
 
-@app.post('/reply/')
+@app.post('/replies/')
 def reply(req_data: ReplyBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization)
     reply = models.PostReply(author=req_data.author, content=req_data.content, date=req_data.date, post=req_data.post)

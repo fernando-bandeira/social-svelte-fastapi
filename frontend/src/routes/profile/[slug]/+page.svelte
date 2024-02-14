@@ -22,11 +22,11 @@
   const fetchData = async () => {
     if (user?.id) {
       loading = true;
-      const res = await api.get(`/user/${profileId}/`);
+      const res = await api.get(`/users/${profileId}/`);
       profileData = res.data;
       followData = profileData.followInfo;
       if (followData?.approved || user.id === profileId || profileData.public) {
-        const resPosts = await api.get(`/posts/${profileId}/`);
+        const resPosts = await api.get(`/posts/user/${profileId}/`);
         posts = resPosts.data;
       }
       loading = false;
@@ -36,12 +36,12 @@
   $: user, profileId, fetchData();
 
   const follow = async () => {
-    await api.post(`/${user.id}/follows/${profileId}/`);
+    await api.post(`/follows/${user.id}/${profileId}/`);
     fetchData();
   };
 
   const unfollow = async () => {
-    await api.delete(`/${user.id}/follows/${profileId}/`);
+    await api.delete(`/follows/${user.id}/${profileId}/`);
     fetchData();
   };
 </script>

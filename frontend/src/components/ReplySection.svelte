@@ -34,7 +34,7 @@
   };
 
   const postReply = async () => {
-    await api.post(`/reply/`, {
+    await api.post(`/replies/`, {
       author: userId,
       content: reply,
       date: new Date().toLocaleString("en-GB"),
