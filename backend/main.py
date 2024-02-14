@@ -367,21 +367,6 @@ def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(N
     return payload
 
 
-@app.get('/{user_1}/follows/{user_2}/')
-def check_relation(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization, [user_1, user_2])
-    result = db.query(models.FollowRelation).filter(
-        models.FollowRelation.requester == user_1,
-        models.FollowRelation.approver == user_2
-    ).first()
-    requested = result is not None
-    approved = result.approved if requested else False
-    return {
-        'requested': requested,
-        'approved': approved
-    }
-
-
 @app.post('/{user_1}/follows/{user_2}/')
 def follow(user_1: int, user_2: int, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [user_1])
@@ -485,29 +470,6 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
         payload = generate_post_payload(post, user_id, db_user, db)
         response_payload.append(payload)
     return response_payload
-
-
-@app.get('/profile-info/{user_id}/{profile_id}/')
-def get_followers_qty(user_id: int, profile_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization, [user_id])
-
-    db_followers = db.query(models.FollowRelation).filter(
-        models.FollowRelation.approver == profile_id,
-        models.FollowRelation.approved
-    ).count()
-
-    db_following = db.query(models.FollowRelation).filter(
-        models.FollowRelation.requester == profile_id,
-        models.FollowRelation.approved
-    ).count()
-
-    db_mutual = get_mutual_followers_qty(user_id, profile_id, db)
-
-    return {
-        'followers': db_followers,
-        'following': db_following,
-        'mutual': db_mutual
-    }
 
 
 @app.get('/likes/{post_id}/')
