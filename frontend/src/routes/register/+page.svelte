@@ -1,7 +1,6 @@
 <script>
   import LoginWrapper from "../../utils/LoginWrapper.svelte";
   import axios from "axios";
-  import { userContext } from "../../stores/userContext";
   import { goto } from "$app/navigation";
   import {
     TextInput,
