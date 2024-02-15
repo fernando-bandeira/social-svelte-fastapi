@@ -48,7 +48,7 @@
 <Collapse open={showReplies}>
   {#if replies.length > 0}
     {#each replies as reply (reply.id)}
-      <Reply {...reply} />
+      <Reply {...reply} {userId} on:delete={fetchReplies} />
     {/each}
   {:else}
     <Center>

@@ -53,3 +53,11 @@ def reply(req_data: ReplyBase, db: db_dependency, authorization: str = Header(No
     reply = models.PostReply(author=req_data.author, content=req_data.content, date=req_data.date, post=req_data.post)
     db.add(reply)
     db.commit()
+
+
+@router.delete('/{reply_id}/')
+def delete_reply(reply_id: int, db: db_dependency, authorization: str = Header(None)):
+    verify_authorization(authorization)
+    reply_db = db.query(models.PostReply).filter(models.PostReply.id == reply_id).first()
+    db.delete(reply_db)
+    db.commit()
