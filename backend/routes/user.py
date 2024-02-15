@@ -39,8 +39,7 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
 
 @router.get('/{user_id}/')
 def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
-    visiting_user = get_user_from_token(authorization)
+    visiting_user = verify_authorization(authorization)
 
     followers_count = db.query(models.FollowRelation).filter(
         models.FollowRelation.approver == user_id,
