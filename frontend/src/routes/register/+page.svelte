@@ -63,7 +63,12 @@
           </Text>
         </div>
         <br />
-        <Button type="submit">Registrar</Button>
+        <div id="actions">
+          <Button type="submit">Registrar</Button>
+          <Text>
+            <a href="/login">Já possuo uma conta</a>
+          </Text>
+        </div>
       </form>
     </Paper>
   </div>
@@ -73,6 +78,17 @@
   #box {
     width: 900px;
     margin: 0 auto;
+  }
+  #actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
   #public-section {
     display: flex;

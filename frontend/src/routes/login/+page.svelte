@@ -3,7 +3,13 @@
   import axios from "axios";
   import { userContext } from "../../stores/userContext";
   import { goto } from "$app/navigation";
-  import { TextInput, PasswordInput, Button, Paper, Text } from "@svelteuidev/core";
+  import {
+    TextInput,
+    PasswordInput,
+    Button,
+    Paper,
+    Text,
+  } from "@svelteuidev/core";
   import { EnvelopeClosed } from "radix-icons-svelte";
 
   const apiBase = import.meta.env.VITE_API_PATH;
@@ -39,7 +45,12 @@
         <Text><label for="password">Senha:</label></Text>
         <PasswordInput bind:value={password} id="password" />
         <br />
-        <Button type="submit">Entrar</Button>
+        <div id="actions">
+          <Button type="submit">Entrar</Button>
+          <Text>
+            <a href="/register">Criar conta</a>
+          </Text>
+        </div>
       </form>
     </Paper>
   </div>
@@ -49,5 +60,16 @@
   #box {
     width: 900px;
     margin: 0 auto;
+  }
+  #actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
   }
 </style>
