@@ -49,7 +49,7 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
 
 @router.post('/')
 def create_reply(req_data: ReplyBase, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
+    verify_authorization(authorization, [req_data.author])
     reply = models.PostReply(author=req_data.author, content=req_data.content, date=req_data.date, post=req_data.post)
     db.add(reply)
     db.commit()
