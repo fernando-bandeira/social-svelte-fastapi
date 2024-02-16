@@ -3,7 +3,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from database import SessionLocal
 import models
-from utils import verify_authorization, get_user_from_token, get_mutual_followers_qty
+from utils import verify_authorization, get_mutual_followers_qty
 router = APIRouter()
 
 
