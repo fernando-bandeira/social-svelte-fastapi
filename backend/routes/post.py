@@ -64,9 +64,18 @@ def delete_post(post_id: int, db: db_dependency, authorization: str = Header(Non
 
 @router.get('/user/{user_id}/')
 def get_posts_from_user(user_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
-    db_posts = db.query(models.Post).filter(models.Post.author == user_id).order_by(desc(models.Post.id)).all()
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user.public:
+        followers = db.query(models.FollowRelation.requester).filter(
+            models.FollowRelation.approver == user_id,
+            models.FollowRelation.approved
+        ).all()
+        allowed_users = [follower[0] for follower in followers]
+        allowed_users.append(user_id)
+        verify_authorization(authorization, allowed_users)
+    else:
+        verify_authorization(authorization)
+    db_posts = db.query(models.Post).filter(models.Post.author == user_id).order_by(desc(models.Post.id)).all()
     response_payload = []
     visiting_user = get_user_from_token(authorization)
     for post in db_posts:

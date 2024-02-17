@@ -32,7 +32,7 @@ def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)
 
 @router.get('/{user_id}/{post_id}/')
 def check_like(user_id: int, post_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
+    verify_authorization(authorization, [user_id])
     db_like = db.query(models.PostLike).filter(
         models.PostLike.user == user_id,
         models.PostLike.post == post_id

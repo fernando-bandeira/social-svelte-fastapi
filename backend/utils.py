@@ -25,9 +25,9 @@ def get_user_from_token(token: str):
         raise HTTPException(status_code=401, detail='Forbidden access')
 
 
-def verify_authorization(token: str, authorized_users: list = []):
+def verify_authorization(token: str, authorized_users: list = [-1]):
     user_id = get_user_from_token(token)
-    if user_id in authorized_users or authorized_users == []:
+    if user_id in authorized_users or authorized_users == [-1]:
         return user_id
     raise HTTPException(status_code=403, detail='Forbidden access')
 

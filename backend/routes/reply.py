@@ -28,7 +28,18 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.get('/{post_id}/')
 def get_replies(post_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
+    user_id = db.query(models.Post).filter(models.Post.id == post_id).first().author
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user.public:
+        followers = db.query(models.FollowRelation.requester).filter(
+            models.FollowRelation.approver == user_id,
+            models.FollowRelation.approved
+        ).all()
+        allowed_users = [follower[0] for follower in followers]
+        allowed_users.append(user_id)
+        verify_authorization(authorization, allowed_users)
+    else:
+        verify_authorization(authorization)
     replies = db.query(models.PostReply).filter(
         models.PostReply.post == post_id
     ).all()
@@ -57,7 +68,7 @@ def create_reply(req_data: ReplyBase, db: db_dependency, authorization: str = He
 
 @router.delete('/{reply_id}/')
 def delete_reply(reply_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
     reply_db = db.query(models.PostReply).filter(models.PostReply.id == reply_id).first()
+    verify_authorization(authorization, [reply_db.author])
     db.delete(reply_db)
     db.commit()
