@@ -3,7 +3,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from database import SessionLocal
 import models
-from utils import verify_authorization
+from utils import verify_authorization, get_mutual_followers_qty
 from sqlalchemy import not_
 router = APIRouter()
 
@@ -67,4 +67,48 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
             'requester': request.requester,
             'requester_name': requester_name
         })
+    return response_payload
+
+
+@router.get('/followers/{user_id}/')
+def get_followers(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    visiting_user = verify_authorization(authorization)
+    followers = db.query(models.FollowRelation).filter(
+        models.FollowRelation.approver == user_id,
+        models.FollowRelation.approved,
+    ).all()
+
+    response_payload = []
+    for follow_request in followers:
+        requester = db.query(models.User).filter(
+            models.User.id == follow_request.requester
+        ).first()
+        response_payload.append({
+            'id': requester.id,
+            'name': requester.name,
+            'mutual': get_mutual_followers_qty(requester.id, visiting_user, db)
+        })
+
+    return response_payload
+
+
+@router.get('/following/{user_id}/')
+def get_following(user_id: int, db: db_dependency, authorization: str = Header(None)):
+    visiting_user = verify_authorization(authorization)
+    following = db.query(models.FollowRelation).filter(
+        models.FollowRelation.requester == user_id,
+        models.FollowRelation.approved,
+    ).all()
+
+    response_payload = []
+    for follow_request in following:
+        approver = db.query(models.User).filter(
+            models.User.id == follow_request.approver
+        ).first()
+        response_payload.append({
+            'id': approver.id,
+            'name': approver.name,
+            'mutual': get_mutual_followers_qty(approver.id, visiting_user, db)
+        })
+
     return response_payload

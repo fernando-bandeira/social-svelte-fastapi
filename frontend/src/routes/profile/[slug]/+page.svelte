@@ -2,9 +2,10 @@
   import AuthWrapper from "../../../utils/AuthWrapper.svelte";
   import { userContext } from "../../../stores/userContext.js";
   import api from "../../../utils/api";
-  import { Button, Title, Paper, Text } from "@svelteuidev/core";
+  import { Button, Title, Paper, Text, Box } from "@svelteuidev/core";
   import Header from "../../../components/Header.svelte";
   import Post from "../../../components/Post.svelte";
+  import FollowersModal from "../../../components/FollowersModal.svelte";
 
   export let data;
   $: profileId = Number(data.slug);
@@ -18,6 +19,8 @@
   let followData;
   let posts;
   let loading = true;
+
+  let modalOpened = false;
 
   const fetchData = async () => {
     if (user?.id) {
@@ -49,6 +52,12 @@
 <AuthWrapper>
   <Header userId={user?.id} />
   {#if !loading}
+    <FollowersModal
+      {modalOpened}
+      {profileId}
+      profileName={profileData.name}
+      on:close={() => (modalOpened = false)}
+    />
     <div id="box">
       <Paper>
         <div id="title-action">
@@ -65,12 +74,16 @@
                 <Button on:click={follow}>Seguir</Button>
               {/if}
             {/if}
-            <Text>
-              Seguidores: {followData.followers} | Seguindo: {followData.following}
-              {#if profileId !== user.id}
-                | Seguidores em comum: {followData.mutual}
-              {/if}
-            </Text>
+            <div id="clickable-info">
+              <Box on:click={() => (modalOpened = true)}>
+                <Text>
+                  Seguidores: {followData.followers} | Seguindo: {followData.following}
+                  {#if profileId !== user.id}
+                    | Seguidores em comum: {followData.mutual}
+                  {/if}
+                </Text>
+              </Box>
+            </div>
           </div>
         </div>
         <hr />
@@ -101,5 +114,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+  #clickable-info {
+    cursor: pointer;
   }
 </style>
