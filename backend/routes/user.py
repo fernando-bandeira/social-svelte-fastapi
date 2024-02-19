@@ -19,12 +19,14 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 
 @router.get('/')
-def search_users(name: str, db: db_dependency, authorization: str = Header(None)):
+def search_users(name: str, db: db_dependency, authorization: str = Header(None), page: int = 1):
     user_id = verify_authorization(authorization)
+    PAGE_SIZE = 20
+    offset = (page - 1) * PAGE_SIZE
     users = db.query(models.User).filter(
         models.User.name.ilike(f'%{name}%'),
         models.User.id != user_id
-    ).all()
+    ).offset(offset).limit(PAGE_SIZE).all()
     response_payload = []
     for user in users:
         payload = {

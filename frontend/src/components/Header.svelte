@@ -11,18 +11,13 @@
   import api from "../utils/api";
   import { MagnifyingGlass } from "radix-icons-svelte";
   import { goto } from "$app/navigation";
+  import UserSearchModal from "./UserSearchModal.svelte";
 
   export let userId;
 
-  let searchUsersModalOpened = false;
   let followRequestsModalOpened = false;
-  let users = [];
+  let searchUsersModalOpened = false;
   let followRequests = [];
-
-  const searchUsers = async (search) => {
-    const res = await api.get(`/users?name=${search}`);
-    users = res.data;
-  };
 
   const getFollowRequests = async () => {
     if (userId) {
@@ -44,29 +39,10 @@
   };
 </script>
 
-<Modal
-  opened={searchUsersModalOpened}
+<UserSearchModal
+  {searchUsersModalOpened}
   on:close={() => (searchUsersModalOpened = false)}
-  title="Buscar usuários"
-  target="body"
->
-  <TextInput
-    autofocus
-    on:input={(e) => searchUsers(e.target.value)}
-    icon={MagnifyingGlass}
-    placeholder="Buscar usuários"
-  />
-  <div id="users-list">
-    {#each users as user (user.id)}
-      <div class="user-card">
-        <Paper>
-          <Text><a href={`/profile/${user.id}/`}>{user.name}</a></Text>
-          <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
-        </Paper>
-      </div>
-    {/each}
-  </div>
-</Modal>
+/>
 <Modal
   opened={followRequestsModalOpened}
   on:close={() => (followRequestsModalOpened = false)}
@@ -147,12 +123,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-  }
-  #users-list {
-    margin-top: 20px;
-  }
-  .user-card {
-    margin: 5px 0;
   }
   .request-card {
     display: flex;
