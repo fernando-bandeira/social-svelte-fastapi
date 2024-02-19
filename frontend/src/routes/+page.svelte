@@ -2,23 +2,16 @@
   import AuthWrapper from "../utils/AuthWrapper.svelte";
   import api from "../utils/api";
   import { userContext } from "../stores/userContext";
-  import {
-    Button,
-    Textarea,
-    Paper,
-    Modal,
-    TextInput,
-    Text,
-    Alert,
-    Box,
-  } from "@svelteuidev/core";
+  import { Button, Textarea, Paper, Alert } from "@svelteuidev/core";
   import { Check, Cross2 } from "radix-icons-svelte";
   import Header from "../components/Header.svelte";
   import Post from "../components/Post.svelte";
+  import UserTagModal from "./UserTagModal.svelte";
 
   let showSuccessMessage = false;
   let showErrorMessage = false;
   let alertMessage;
+  let tagUsersModalOpened = false;
 
   const handleAlert = (isError, msg) => {
     alertMessage = msg;
@@ -43,13 +36,6 @@
     }
   };
   $: user, fetchData();
-
-  let users = [];
-  let tagUsersModalOpened = false;
-  const searchUsers = async (search) => {
-    const res = await api.get(`/users?name=${search}`);
-    users = res.data;
-  };
 
   let post;
   const createPost = async () => {
@@ -98,37 +84,14 @@
       </Alert>
     {/if}
   </div>
-  <Modal
-    opened={tagUsersModalOpened}
+  <UserTagModal
+    {tagUsersModalOpened}
     on:close={() => (tagUsersModalOpened = false)}
-    title="Buscar usuários"
-    target="body"
-  >
-    <TextInput
-      autofocus
-      on:input={(e) => searchUsers(e.target.value)}
-      placeholder="Buscar usuários"
-    />
-    <div id="users-list">
-      {#each users as user (user.id)}
-        <div class="user-card">
-          <Box
-            on:click={() => {
-              post = post + `${user.id}@ `;
-              tagUsersModalOpened = false;
-            }}
-          >
-            <Paper>
-              <Text>
-                {user.name}
-              </Text>
-              <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
-            </Paper>
-          </Box>
-        </div>
-      {/each}
-    </div>
-  </Modal>
+    on:userClicked={(e) => {
+      post = post + `${e.detail.id}@ `;
+      tagUsersModalOpened = false;
+    }}
+  />
   <div id="box">
     <Paper>
       <form on:submit={createPost}>
@@ -148,9 +111,5 @@
   #box {
     width: 900px;
     margin: 0 auto;
-  }
-  .user-card {
-    margin: 5px 0;
-    cursor: pointer;
   }
 </style>

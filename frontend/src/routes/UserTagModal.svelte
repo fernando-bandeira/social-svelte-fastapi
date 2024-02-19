@@ -1,12 +1,11 @@
 <script>
-  import { TextInput, Modal, Paper, Text } from "@svelteuidev/core";
   import api from "../utils/api";
-  import { MagnifyingGlass } from "radix-icons-svelte";
+  import { Paper, Modal, TextInput, Text, Box } from "@svelteuidev/core";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let searchUsersModalOpened = false;
+  export let tagUsersModalOpened = false;
   let search = "";
   let users = [];
   let usersPage = 1;
@@ -32,11 +31,10 @@
 </script>
 
 <Modal
-  opened={searchUsersModalOpened}
+  opened={tagUsersModalOpened}
   on:close={() => dispatch("close")}
   title="Buscar usuários"
   target="body"
-  overflow="inside"
 >
   <TextInput
     autofocus
@@ -46,16 +44,23 @@
       usersPage = 1;
       searchUsers(e.target.value);
     }}
-    icon={MagnifyingGlass}
     placeholder="Buscar usuários"
   />
   <div id="users-list" on:scroll={checkScroll}>
     {#each users as user (user.id)}
       <div class="user-card">
-        <Paper>
-          <Text><a href={`/profile/${user.id}/`}>{user.name}</a></Text>
-          <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
-        </Paper>
+        <Box
+          on:click={() => {
+            dispatch("userClicked", { id: user.id });
+          }}
+        >
+          <Paper>
+            <Text>
+              {user.name}
+            </Text>
+            <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
+          </Paper>
+        </Box>
       </div>
     {/each}
   </div>
@@ -69,11 +74,6 @@
   }
   .user-card {
     margin: 5px 0;
-  }
-  a {
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
+    cursor: pointer;
   }
 </style>
