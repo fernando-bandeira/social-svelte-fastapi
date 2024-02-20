@@ -66,7 +66,7 @@
       {modalOpened}
       {profileId}
       profileName={profileData.name}
-      on:close={() => (modalOpened = false)}
+      on:modalClosed={() => (modalOpened = false)}
     />
     <div id="box">
       <Paper>

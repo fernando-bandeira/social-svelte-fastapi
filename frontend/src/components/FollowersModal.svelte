@@ -9,6 +9,7 @@
   export let profileId;
   export let profileName;
 
+  let activeTab = 1;
   let data = [];
   let loading = true;
   let usersPage = 1;
@@ -37,11 +38,15 @@
   const onTabChange = (event) => {
     loading = true;
     const { key } = event.detail;
+    usersPage = 1;
+    data = [];
     switch (key) {
       case "followers":
+        activeTab = 1;
         fetchFollowers();
         break;
       case "following":
+        activeTab = 2;
         fetchFollowing();
         break;
     }
@@ -51,14 +56,21 @@
     const div = document.querySelector("#users-list");
     if (div.scrollTop + div.clientHeight === div.scrollHeight) {
       usersPage++;
-      fetchFollowers();
+      switch (activeTab) {
+        case 1:
+          fetchFollowers();
+          break;
+        case 2:
+          fetchFollowing();
+          break;
+      }
     }
   };
 </script>
 
 <Modal
   opened={modalOpened}
-  on:close={() => dispatch("close")}
+  on:close={() => dispatch("modalClosed")}
   title={profileName}
   target="body"
 >
