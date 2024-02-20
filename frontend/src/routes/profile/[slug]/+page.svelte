@@ -103,7 +103,7 @@
             <Post userId={user?.id} {...post} on:update={fetchData} />
           {/each}
         {:else}
-          Você não segue esse usuário.
+          <Text>Você não segue esse usuário.</Text>
         {/if}
       </Paper>
     </div>
