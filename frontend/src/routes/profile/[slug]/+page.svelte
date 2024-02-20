@@ -65,6 +65,7 @@
     <FollowersModal
       {modalOpened}
       {profileId}
+      userId={user.id}
       profileName={profileData.name}
       on:modalClosed={() => (modalOpened = false)}
     />

@@ -8,6 +8,7 @@
   export let modalOpened;
   export let profileId;
   export let profileName;
+  export let userId;
 
   let activeTab = 1;
   let data = [];
@@ -86,7 +87,9 @@
             <Text>
               <a href={`/profile/${follower.id}/`}>{follower.name}</a>
             </Text>
-            <Text size="sm">{follower.mutual} seguidor(es) em comum</Text>
+            {#if follower.id !== userId}
+              <Text size="sm">{follower.mutual} seguidor(es) em comum</Text>
+            {/if}
           </Paper>
         </div>
       {/each}
