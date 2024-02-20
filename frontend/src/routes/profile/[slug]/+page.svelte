@@ -44,6 +44,16 @@
   };
 
   const unfollow = async () => {
+    if (!profileData.public) {
+      if (!confirm(`Este perfil é privado. Deseja mesmo parar de seguir?`)) {
+        return;
+      }
+    }
+    await api.delete(`/follows/${user.id}/${profileId}/`);
+    fetchData();
+  };
+
+  const cancelRequest = async () => {
     await api.delete(`/follows/${user.id}/${profileId}/`);
     fetchData();
   };
@@ -67,7 +77,7 @@
               {#if followData?.approved}
                 <Button color="red" on:click={unfollow}>Parar de seguir</Button>
               {:else if followData?.requested}
-                <Button color="red" on:click={unfollow}
+                <Button color="red" on:click={cancelRequest}
                   >Cancelar solicitação</Button
                 >
               {:else}
