@@ -15,6 +15,7 @@
   import { Trash, Pencil1, Update, Check, Cross2 } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
   import ReplySection from "./ReplySection.svelte";
+  import { Heart, HeartFilled, Rocket } from 'radix-icons-svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -195,7 +196,9 @@
       {/if}
     </div>
     <div id="like-section">
-      <Checkbox checked={liked} on:input={handleLike} />
+      <Checkbox checked={liked} on:input={handleLike}>
+        <HeartFilled size={15} />
+      </Checkbox>
       <Text>{likeCount}</Text>
     </div>
     <hr />
