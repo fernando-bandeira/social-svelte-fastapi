@@ -30,6 +30,18 @@ DB_PASS=your_database_password_here
 
 Replace your_secret_key_here and your_database_password_here with your desired values.
 
+If you don't know what the secret key should be, you can generate one at random with Python:
+
+```
+import secrets
+
+api_secret_key = secrets.token_hex(32)
+print(api_secret_key)
+```
+
+However, don't generate this inside the project dinamically. Instead, save it directly in the .env file.
+
+
 ## Running the Project
 
 ### Frontend
