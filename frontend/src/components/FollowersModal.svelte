@@ -11,16 +11,21 @@
 
   let data = [];
   let loading = true;
+  let usersPage = 1;
 
   const fetchFollowers = async () => {
-    const res = await api.get(`/follows/followers/${profileId}/`);
-    data = res.data;
+    const res = await api.get(
+      `/follows/followers/${profileId}/?page=${usersPage}`,
+    );
+    data = data.concat(res.data);
     loading = false;
   };
 
   const fetchFollowing = async () => {
-    const res = await api.get(`/follows/following/${profileId}/`);
-    data = res.data;
+    const res = await api.get(
+      `/follows/following/${profileId}/?page=${usersPage}`,
+    );
+    data = data.concat(res.data);
     loading = false;
   };
 
@@ -41,14 +46,19 @@
         break;
     }
   };
+
+  const checkScroll = () => {
+    const div = document.querySelector("#users-list");
+    if (div.scrollTop + div.clientHeight === div.scrollHeight) {
+      usersPage++;
+      fetchFollowers();
+    }
+  };
 </script>
 
 <Modal
   opened={modalOpened}
-  on:close={() => {
-    modalOpened = false;
-    dispatch("close");
-  }}
+  on:close={() => dispatch("close")}
   title={profileName}
   target="body"
 >
@@ -57,20 +67,27 @@
     <Tabs.Tab label="Seguindo" tabKey="following"></Tabs.Tab>
   </Tabs>
   {#if !loading}
-    {#each data as follower (follower.id)}
-      <div class="user-card">
-        <Paper>
-          <Text>
-            <a href={`/profile/${follower.id}/`}>{follower.name}</a>
-          </Text>
-          <Text size="sm">{follower.mutual} seguidor(es) em comum</Text>
-        </Paper>
-      </div>
-    {/each}
+    <div id="users-list" on:scroll={checkScroll}>
+      {#each data as follower (follower.id)}
+        <div class="user-card">
+          <Paper>
+            <Text>
+              <a href={`/profile/${follower.id}/`}>{follower.name}</a>
+            </Text>
+            <Text size="sm">{follower.mutual} seguidor(es) em comum</Text>
+          </Paper>
+        </div>
+      {/each}
+    </div>
   {/if}
 </Modal>
 
 <style>
+  #users-list {
+    margin-top: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
   .user-card {
     margin: 5px 0;
   }

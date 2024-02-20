@@ -71,12 +71,14 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
 
 
 @router.get('/followers/{user_id}/')
-def get_followers(user_id: int, db: db_dependency, authorization: str = Header(None)):
+def get_followers(user_id: int, db: db_dependency, authorization: str = Header(None), page: int = 1):
     visiting_user = verify_authorization(authorization)
+    PAGE_SIZE = 10
+    offset = (page - 1) * PAGE_SIZE
     followers = db.query(models.FollowRelation).filter(
         models.FollowRelation.approver == user_id,
         models.FollowRelation.approved,
-    ).all()
+    ).offset(offset).limit(PAGE_SIZE).all()
 
     response_payload = []
     for follow_request in followers:
@@ -93,12 +95,14 @@ def get_followers(user_id: int, db: db_dependency, authorization: str = Header(N
 
 
 @router.get('/following/{user_id}/')
-def get_following(user_id: int, db: db_dependency, authorization: str = Header(None)):
+def get_following(user_id: int, db: db_dependency, authorization: str = Header(None), page: int = 1):
     visiting_user = verify_authorization(authorization)
+    PAGE_SIZE = 10
+    offset = (page - 1) * PAGE_SIZE
     following = db.query(models.FollowRelation).filter(
         models.FollowRelation.requester == user_id,
         models.FollowRelation.approved,
-    ).all()
+    ).offset(offset).limit(PAGE_SIZE).all()
 
     response_payload = []
     for follow_request in following:
