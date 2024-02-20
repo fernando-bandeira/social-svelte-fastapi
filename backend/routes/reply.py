@@ -31,15 +31,10 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
     user_id = db.query(models.Post).filter(models.Post.id == post_id).first().author
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user.public:
-        followers = db.query(models.FollowRelation.requester).filter(
-            models.FollowRelation.approver == user_id,
-            models.FollowRelation.approved
-        ).all()
-        allowed_users = [follower[0] for follower in followers]
-        allowed_users.append(user_id)
-        verify_authorization(authorization, allowed_users)
+        verify_authorization(authorization, followers_of=user_id, db=db)
     else:
-        verify_authorization(authorization)
+        verify_authorization(authorization, allow_all=True)
+
     replies = db.query(models.PostReply).filter(
         models.PostReply.post == post_id
     ).all()

@@ -20,7 +20,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.get('/')
 def search_users(name: str, db: db_dependency, authorization: str = Header(None), page: int = 1):
-    user_id = verify_authorization(authorization)
+    user_id = verify_authorization(authorization, allow_all=True)
     PAGE_SIZE = 20
     offset = (page - 1) * PAGE_SIZE
     users = db.query(models.User).filter(
@@ -41,7 +41,7 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
 
 @router.get('/{user_id}/')
 def get_user_data(user_id: int, db: db_dependency, authorization: str = Header(None)):
-    visiting_user = verify_authorization(authorization)
+    visiting_user = verify_authorization(authorization, allow_all=True)
 
     followers_count = db.query(models.FollowRelation).filter(
         models.FollowRelation.approver == user_id,

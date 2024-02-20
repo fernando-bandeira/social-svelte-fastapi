@@ -72,7 +72,7 @@ def get_requests(user_id: int, db: db_dependency, authorization: str = Header(No
 
 @router.get('/followers/{user_id}/')
 def get_followers(user_id: int, db: db_dependency, authorization: str = Header(None), page: int = 1):
-    visiting_user = verify_authorization(authorization)
+    visiting_user = verify_authorization(authorization, allow_all=True)
     PAGE_SIZE = 10
     offset = (page - 1) * PAGE_SIZE
     followers = db.query(models.FollowRelation).filter(
@@ -96,7 +96,7 @@ def get_followers(user_id: int, db: db_dependency, authorization: str = Header(N
 
 @router.get('/following/{user_id}/')
 def get_following(user_id: int, db: db_dependency, authorization: str = Header(None), page: int = 1):
-    visiting_user = verify_authorization(authorization)
+    visiting_user = verify_authorization(authorization, allow_all=True)
     PAGE_SIZE = 10
     offset = (page - 1) * PAGE_SIZE
     following = db.query(models.FollowRelation).filter(

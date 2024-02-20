@@ -2,13 +2,26 @@ import models
 import jwt
 import re
 import os
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from dotenv import load_dotenv
 from sqlalchemy import or_, and_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, Session
+from typing import Optional, Annotated
+from database import SessionLocal
 
 load_dotenv()
 SECRET_KEY = os.environ.get('SECRET_KEY')
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+db_dependency = Annotated[Session, Depends(get_db)]
 
 
 def get_user_from_token(token: str):
@@ -25,9 +38,26 @@ def get_user_from_token(token: str):
         raise HTTPException(status_code=401, detail='Forbidden access')
 
 
-def verify_authorization(token: str, authorized_users: list = [-1]):
+def verify_authorization(
+    token: str,
+    authorized_users: list = [],
+    followers_of: int = 0,
+    db: Optional[db_dependency] = None,
+    allow_all: bool = False
+):
     user_id = get_user_from_token(token)
-    if user_id in authorized_users or authorized_users == [-1]:
+    if followers_of and db:
+        followers = db.query(models.FollowRelation.requester).filter(
+            models.FollowRelation.approver == followers_of,
+            models.FollowRelation.approved
+        ).all()
+        authorized_followers = [follower[0] for follower in followers]
+        authorized_followers.append(followers_of)
+    else:
+        authorized_followers = []
+    authorized_users.extend(authorized_followers)
+
+    if user_id in authorized_users or allow_all:
         return user_id
     raise HTTPException(status_code=403, detail='Forbidden access')
 

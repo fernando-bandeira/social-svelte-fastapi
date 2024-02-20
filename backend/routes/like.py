@@ -20,7 +20,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.get('/post/{post_id}/')
 def get_likes(post_id: int, db: db_dependency, authorization: str = Header(None)):
-    verify_authorization(authorization)
+    verify_authorization(authorization, allow_all=True)
     db_likes = db.query(models.PostLike).filter(
         models.PostLike.post == post_id
     ).count()
