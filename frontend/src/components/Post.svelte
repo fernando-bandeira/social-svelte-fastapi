@@ -2,7 +2,6 @@
   import {
     Paper,
     Text,
-    Checkbox,
     Button,
     Textarea,
     Menu,
@@ -15,7 +14,7 @@
   import { Trash, Pencil1, Update, Check, Cross2 } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
   import ReplySection from "./ReplySection.svelte";
-  import { Heart, HeartFilled, Rocket } from 'radix-icons-svelte';
+  import { Heart, HeartFilled } from "radix-icons-svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -33,6 +32,8 @@
   let showSuccessMessage = false;
   let showErrorMessage = false;
   let alertMessage;
+
+  let likeHover = false;
 
   const handleAlert = (isError, msg) => {
     alertMessage = msg;
@@ -196,9 +197,18 @@
       {/if}
     </div>
     <div id="like-section">
-      <Checkbox checked={liked} on:input={handleLike}>
-        <HeartFilled size={15} />
-      </Checkbox>
+      <ActionIcon
+        variant="hover"
+        on:mouseover={() => (likeHover = true)}
+        on:mouseleave={() => (likeHover = false)}
+        on:click={handleLike}
+      >
+        {#if liked || likeHover}
+          <HeartFilled color="#228BE6" size={25} />
+        {:else}
+          <Heart color="#228BE6" size={25} />
+        {/if}
+      </ActionIcon>
       <Text>{likeCount}</Text>
     </div>
     <hr />
@@ -234,7 +244,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
   }
   a {
     text-decoration: none;
