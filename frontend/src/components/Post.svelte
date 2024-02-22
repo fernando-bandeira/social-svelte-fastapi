@@ -28,6 +28,7 @@
   export let tags;
   export let likeCount;
   export let liked;
+  export let repostCount;
 
   let showSuccessMessage = false;
   let showErrorMessage = false;
@@ -200,26 +201,32 @@
             Excluir
           </Menu.Item>
         </Menu>
-      {:else if !repost}
-        <ActionIcon on:click={handleRepost}>
-          <Update />
-        </ActionIcon>
       {/if}
     </div>
-    <div id="like-section">
-      <ActionIcon
-        variant="transparent"
-        on:mouseenter={() => (likeHover = true)}
-        on:mouseleave={() => (likeHover = false)}
-        on:click={handleLike}
-      >
-        {#if liked || likeHover}
-          <HeartFilled color="#228BE6" size={25} />
-        {:else}
-          <Heart color="#228BE6" size={25} />
-        {/if}
-      </ActionIcon>
-      <Text>{likeCount}</Text>
+    <div id="action-group">
+      <div class="action">
+        <ActionIcon
+          variant="transparent"
+          on:mouseenter={() => (likeHover = true)}
+          on:mouseleave={() => (likeHover = false)}
+          on:click={handleLike}
+        >
+          {#if liked || likeHover}
+            <HeartFilled color="#228BE6" size={25} />
+          {:else}
+            <Heart color="#228BE6" size={25} />
+          {/if}
+        </ActionIcon>
+        <Text>{likeCount}</Text>
+      </div>
+      {#if !repost}
+        <div class="action">
+          <ActionIcon on:click={handleRepost}>
+            <Update size={20} />
+          </ActionIcon>
+          <Text>{repostCount}</Text>
+        </div>
+      {/if}
     </div>
     <hr />
     <ReplySection {id} {userId} />
@@ -250,11 +257,17 @@
     justify-content: flex-end;
     gap: 10px;
   }
-  #like-section {
+  #action-group {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 5px;
+    gap: 25px;
+  }
+  .action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3px;
   }
   a {
     text-decoration: none;
