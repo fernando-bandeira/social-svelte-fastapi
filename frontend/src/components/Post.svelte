@@ -103,6 +103,16 @@
     });
     dispatch("update");
   };
+
+  const handleHover = () => {
+    if (likeHover) {
+      setTimeout(() => {
+        likeHover = false;
+      }, 2000);
+    }
+  };
+
+  $: likeHover, handleHover();
 </script>
 
 <div id="container">
@@ -198,8 +208,8 @@
     </div>
     <div id="like-section">
       <ActionIcon
-        variant="hover"
-        on:mouseover={() => (likeHover = true)}
+        variant="transparent"
+        on:mouseenter={() => (likeHover = true)}
         on:mouseleave={() => (likeHover = false)}
         on:click={handleLike}
       >
