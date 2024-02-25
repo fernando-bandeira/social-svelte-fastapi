@@ -12,6 +12,7 @@
   let showErrorMessage = false;
   let alertMessage;
   let tagUsersModalOpened = false;
+  let tags = {};
 
   const handleAlert = (isError, msg) => {
     alertMessage = msg;
@@ -40,6 +41,15 @@
   let post;
   const createPost = async () => {
     try {
+      const regex = /@([^@]+)@/g;
+      const matches = post.match(regex);
+      matches.forEach((match) => {
+        let name = match.slice(1, -1);
+        if (tags[name]) {
+          post = post.replace(match, `@${tags[name]}@`);
+        }
+      });
+
       await api.post("/posts/", {
         content: post,
         author: user.id,
@@ -88,7 +98,8 @@
     {tagUsersModalOpened}
     on:close={() => (tagUsersModalOpened = false)}
     on:userClicked={(e) => {
-      post = post + `${e.detail.id}@ `;
+      post = post + `${e.detail.name}@ `;
+      tags[e.detail.name] = e.detail.id;
       tagUsersModalOpened = false;
     }}
   />

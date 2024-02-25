@@ -33,7 +33,7 @@
 <Modal
   opened={tagUsersModalOpened}
   on:close={() => dispatch("close")}
-  title="Buscar usuários"
+  title="Marcar usuários"
   target="body"
 >
   <TextInput
@@ -51,7 +51,7 @@
       <div class="user-card">
         <Box
           on:click={() => {
-            dispatch("userClicked", { id: user.id });
+            dispatch("userClicked", { id: user.id, name: user.name });
           }}
         >
           <Paper>

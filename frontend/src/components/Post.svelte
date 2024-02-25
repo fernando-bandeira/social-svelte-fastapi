@@ -68,6 +68,10 @@
 
   const updatePost = async () => {
     try {
+      editedContent = editedContent.replace(/@([^@]+)@/g, (_, tagName) => {
+        const id = tags.find((tag) => tag.name == tagName).id;
+        return "@" + id + "@";
+      });
       await api.put(`/posts/${id}/`, {
         content: editedContent,
         author: userId,
@@ -190,7 +194,16 @@
         <Menu>
           {#if !repost}
             <Menu.Item
-              on:click={() => (editing = true)}
+              on:click={() => {
+                editedContent = editedContent.replace(
+                  /@([^@]+)@/g,
+                  (_, tagId) => {
+                    const name = tags.find((tag) => tag.id == tagId).name;
+                    return "@" + name + "@";
+                  },
+                );
+                editing = true;
+              }}
               disabled={editing}
               icon={Pencil1}
             >
