@@ -43,12 +43,14 @@
     try {
       const regex = /@([^@]+)@/g;
       const matches = post.match(regex);
-      matches.forEach((match) => {
-        let name = match.slice(1, -1);
-        if (tags[name]) {
-          post = post.replace(match, `@${tags[name]}@`);
-        }
-      });
+      if (matches) {
+        matches.forEach((match) => {
+          let name = match.slice(1, -1);
+          if (tags[name]) {
+            post = post.replace(match, `@${tags[name]}@`);
+          }
+        });
+      }
 
       await api.post("/posts/", {
         content: post,

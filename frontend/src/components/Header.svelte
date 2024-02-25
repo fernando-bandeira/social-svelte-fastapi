@@ -51,32 +51,34 @@
 >
   {#if followRequests.length > 0}
     {#each followRequests as request (request.id)}
-      <Paper>
-        <div class="request-card">
-          <Text>
-            <a href={`/profile/${request.requester}/`}>
-              {request.requester_name}
-            </a>
-          </Text>
-          <div class="request-actions">
-            <Button
-              on:click={() => {
-                approve(request.requester);
-              }}
-            >
-              Aprovar
-            </Button>
-            <Button
-              color="red"
-              on:click={() => {
-                unfollow(request.requester);
-              }}
-            >
-              Recusar
-            </Button>
+      <div style="margin-bottom: 10px;">
+        <Paper>
+          <div class="request-card">
+            <Text>
+              <a href={`/profile/${request.requester}/`}>
+                {request.requester_name}
+              </a>
+            </Text>
+            <div class="request-actions">
+              <Button
+                on:click={() => {
+                  approve(request.requester);
+                }}
+              >
+                Aprovar
+              </Button>
+              <Button
+                color="red"
+                on:click={() => {
+                  unfollow(request.requester);
+                }}
+              >
+                Recusar
+              </Button>
+            </div>
           </div>
-        </div>
-      </Paper>
+        </Paper>
+      </div>
     {/each}
   {:else}
     <Text>Não há solicitações.</Text>
@@ -127,6 +129,7 @@
   .request-card {
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   .request-actions {
     display: flex;
