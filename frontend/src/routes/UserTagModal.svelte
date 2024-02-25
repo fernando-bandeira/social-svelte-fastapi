@@ -51,6 +51,7 @@
       <div class="user-card">
         <Box
           on:click={() => {
+            search = "";
             dispatch("userClicked", { id: user.id, name: user.name });
           }}
         >
