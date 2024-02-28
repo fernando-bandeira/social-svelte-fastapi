@@ -41,6 +41,7 @@
 
 <UserSearchModal
   {searchUsersModalOpened}
+  {userId}
   on:close={() => (searchUsersModalOpened = false)}
 />
 <Modal

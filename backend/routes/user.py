@@ -29,14 +29,24 @@ def search_users(name: str, db: db_dependency, authorization: str = Header(None)
     ).offset(offset).limit(PAGE_SIZE).all()
     response_payload = []
     for user in users:
+        follow_request = db.query(models.FollowRelation).filter(
+            models.FollowRelation.requester == user_id,
+            models.FollowRelation.approver == user.id
+        ).first()
+        requested = follow_request is not None
+        approved = follow_request.approved if requested else False
         payload = {
             'id': user.id,
             'name': user.name,
             'public': user.public,
-            'mutual': get_mutual_followers_qty(user.id, user_id, db)
+            'followInfo': {
+                'mutual': get_mutual_followers_qty(user.id, user_id, db),
+                'requested': requested,
+                'approved': approved
+            }
         }
         response_payload.append(payload)
-    return sorted(response_payload, key=lambda u: u['mutual'], reverse=True)
+    return sorted(response_payload, key=lambda u: u['followInfo']['mutual'], reverse=True)
 
 
 @router.get('/{user_id}/')

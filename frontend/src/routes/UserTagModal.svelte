@@ -59,7 +59,7 @@
             <Text>
               {user.name}
             </Text>
-            <Text size="sm">{user.mutual} seguidor(es) em comum</Text>
+            <Text size="sm">{user.followInfo.mutual} seguidor(es) em comum</Text>
           </Paper>
         </Box>
       </div>
