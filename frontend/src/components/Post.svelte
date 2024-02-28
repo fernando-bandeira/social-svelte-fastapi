@@ -198,7 +198,7 @@
                 editedContent = editedContent.replace(
                   /@([^@]+)@/g,
                   (_, tagId) => {
-                    const name = tags.find((tag) => tag.id == tagId).name;
+                    const name = tags.find((tag) => tag.id == tagId)?.name;
                     return "@" + name + "@";
                   },
                 );

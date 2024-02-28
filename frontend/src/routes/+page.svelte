@@ -44,12 +44,15 @@
       const regex = /@([^@]+)@/g;
       const matches = post.match(regex);
       if (matches) {
-        matches.forEach((match) => {
+        for (const match of matches) {
           let name = match.slice(1, -1);
           if (tags[name]) {
             post = post.replace(match, `@${tags[name]}@`);
+          } else {
+            handleAlert(true, `Sintaxe inválida: ${match}`);
+            return;
           }
-        });
+        }
       }
 
       await api.post("/posts/", {

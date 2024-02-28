@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session
@@ -6,6 +6,8 @@ from database import SessionLocal
 import models
 from utils import verify_authorization, get_user_from_token, generate_post_payload
 from sqlalchemy import desc, or_
+import re
+
 router = APIRouter()
 
 
@@ -31,6 +33,16 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.post('/')
 def create_post(req_data: PostBase, db: db_dependency, authorization: str = Header(None)):
     verify_authorization(authorization, [req_data.author])
+    pattern = r'@([^@]+)@'
+    matches = re.findall(pattern, req_data.content)
+    for match in matches:
+        try:
+            match = int(match)
+            tagged_user = db.query(models.User).filter(models.User.id == match).first()
+            if not tagged_user:
+                raise HTTPException(status_code=400, detail='Invalid tagging.')
+        except ValueError:
+            raise HTTPException(status_code=400, detail='Invalid post syntax.')
     db_post = models.Post(
         author=req_data.author,
         content=req_data.content,
