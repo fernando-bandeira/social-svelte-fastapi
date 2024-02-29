@@ -2,13 +2,28 @@
   import AuthWrapper from "../../../utils/AuthWrapper.svelte";
   import { userContext } from "../../../stores/userContext.js";
   import api from "../../../utils/api";
-  import { Button, Title, Paper, Text, Box } from "@svelteuidev/core";
+  import { Button, Title, Paper, Text, Box, Alert } from "@svelteuidev/core";
   import Header from "../../../components/Header.svelte";
   import Post from "../../../components/Post.svelte";
   import FollowersModal from "../../../components/FollowersModal.svelte";
+  import { Check, Cross2 } from "radix-icons-svelte";
 
   export let data;
   $: profileId = Number(data.slug);
+
+  let showSuccessMessage = false;
+  let showErrorMessage = false;
+  let alertMessage;
+
+  const handleAlert = (isError, msg) => {
+    alertMessage = msg;
+    showErrorMessage = isError;
+    showSuccessMessage = !isError;
+    setTimeout(() => {
+      showErrorMessage = false;
+      showSuccessMessage = false;
+    }, 5000);
+  };
 
   let user;
   userContext.subscribe((value) => {
@@ -24,22 +39,34 @@
 
   const fetchData = async () => {
     if (user?.id) {
-      loading = true;
-      const res = await api.get(`/users/${profileId}/`);
-      profileData = res.data;
-      followData = profileData.followInfo;
-      if (followData?.approved || user.id === profileId || profileData.public) {
-        const resPosts = await api.get(`/posts/user/${profileId}/`);
-        posts = resPosts.data;
+      try {
+        loading = true;
+        const res = await api.get(`/users/${profileId}/`);
+        profileData = res.data;
+        followData = profileData.followInfo;
+        if (
+          followData?.approved ||
+          user.id === profileId ||
+          profileData.public
+        ) {
+          const resPosts = await api.get(`/posts/user/${profileId}/`);
+          posts = resPosts.data;
+        }
+        loading = false;
+      } catch (err) {
+        handleAlert(true, "Erro ao carregar dados do usuário.");
       }
-      loading = false;
     }
   };
 
   $: user, profileId, fetchData();
 
   const follow = async () => {
-    await api.post(`/follows/${user.id}/${profileId}/`);
+    try {
+      await api.post(`/follows/${user.id}/${profileId}/`);
+    } catch (err) {
+      handleAlert(true, "Erro ao seguir usuário.");
+    }
     fetchData();
   };
 
@@ -49,18 +76,41 @@
         return;
       }
     }
-    await api.delete(`/follows/${user.id}/${profileId}/`);
+    try {
+      await api.delete(`/follows/${user.id}/${profileId}/`);
+    } catch (err) {
+      handleAlert(true, "Erro ao deixar de seguir usuário.");
+    }
     fetchData();
   };
 
   const cancelRequest = async () => {
-    await api.delete(`/follows/${user.id}/${profileId}/`);
+    try {
+      await api.delete(`/follows/${user.id}/${profileId}/`);
+    } catch (err) {
+      handleAlert(true, "Erro ao cancelar solicitação.");
+    }
     fetchData();
   };
 </script>
 
 <AuthWrapper>
   <Header userId={user?.id} />
+  <div style="position: fixed; bottom: 40px; right: 20px">
+    {#if showSuccessMessage || showErrorMessage}
+      <Alert
+        color={showSuccessMessage ? "teal" : "red"}
+        icon={showSuccessMessage ? Check : Cross2}
+        withCloseButton
+        on:close={() => {
+          showSuccessMessage = false;
+          showErrorMessage = false;
+        }}
+      >
+        {alertMessage}
+      </Alert>
+    {/if}
+  </div>
   {#if !loading}
     <FollowersModal
       {modalOpened}

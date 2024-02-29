@@ -32,8 +32,12 @@
   let posts = [];
   const fetchData = async () => {
     if (user?.id) {
-      const res = await api.get(`/posts/feed/${user.id}/`);
-      posts = res.data;
+      try {
+        const res = await api.get(`/posts/feed/${user.id}/`);
+        posts = res.data;
+      } catch (err) {
+        handleAlert(true, "Erro ao carregar posts.");
+      }
     }
   };
   $: user, fetchData();
