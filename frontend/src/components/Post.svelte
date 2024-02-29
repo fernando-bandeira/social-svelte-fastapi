@@ -11,7 +11,14 @@
   import api from "../utils/api";
   import { createEventDispatcher } from "svelte";
   import { focus } from "@svelteuidev/composables";
-  import { Trash, Pencil1, Update, Check, Cross2 } from "radix-icons-svelte";
+  import {
+    Trash,
+    Pencil1,
+    Update,
+    Check,
+    Cross2,
+    ChatBubble,
+  } from "radix-icons-svelte";
   import ProcessedPost from "./ProcessedPost.svelte";
   import ReplySection from "./ReplySection.svelte";
   import { Heart, HeartFilled } from "radix-icons-svelte";
@@ -30,11 +37,11 @@
   export let liked;
   export let repostCount;
 
+  let showReplies = false;
+
   let showSuccessMessage = false;
   let showErrorMessage = false;
   let alertMessage;
-
-  let likeHover = false;
 
   const handleAlert = (isError, msg) => {
     alertMessage = msg;
@@ -108,16 +115,6 @@
     });
     dispatch("update");
   };
-
-  const handleHover = () => {
-    if (likeHover) {
-      setTimeout(() => {
-        likeHover = false;
-      }, 2000);
-    }
-  };
-
-  $: likeHover, handleHover();
 </script>
 
 <div id="container">
@@ -216,15 +213,11 @@
         </Menu>
       {/if}
     </div>
+    <hr />
     <div id="action-group">
       <div class="action">
-        <ActionIcon
-          variant="transparent"
-          on:mouseenter={() => (likeHover = true)}
-          on:mouseleave={() => (likeHover = false)}
-          on:click={handleLike}
-        >
-          {#if liked || likeHover}
+        <ActionIcon variant="hover" color="#228BE625" on:click={handleLike}>
+          {#if liked}
             <HeartFilled color="#228BE6" size={25} />
           {:else}
             <Heart color="#228BE6" size={25} />
@@ -234,15 +227,28 @@
       </div>
       {#if !repost}
         <div class="action">
-          <ActionIcon on:click={handleRepost}>
-            <Update size={20} />
+          <ActionIcon variant="hover" color="#228BE625" on:click={handleRepost}>
+            <Update color="#228BE6" size={20} />
           </ActionIcon>
           <Text>{repostCount}</Text>
         </div>
       {/if}
+      <div class="action">
+        <ActionIcon
+          variant="hover"
+          color="#228BE625"
+          on:click={() => (showReplies = !showReplies)}
+        >
+          <ChatBubble color="#228BE6" size={20} />
+        </ActionIcon>
+      </div>
     </div>
-    <hr />
-    <ReplySection {id} {userId} />
+    <ReplySection
+      {id}
+      {userId}
+      {showReplies}
+      on:close={() => (showReplies = false)}
+    />
   </Paper>
 </div>
 
