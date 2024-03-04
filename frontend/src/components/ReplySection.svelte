@@ -14,6 +14,7 @@
   export let id;
   export let userId;
   export let showReplies;
+  export let replyCount;
 
   const dispatch = createEventDispatcher();
 
@@ -21,16 +22,25 @@
   let loading = false;
 
   let reply;
+  let replyPage = 1;
 
-  const fetchReplies = async () => {
+  const fetchReplies = async (accumulate = false) => {
+    loading = true;
+    if (!accumulate) {
+      replies = [];
+      replyPage = 1;
+    }
+    const res = await api.get(`/replies/${id}/?page=${replyPage}`);
+    replies = res.data.concat(replies);
+    loading = false;
+  };
+
+  const handleReplyFetch = () => {
     if (replies.length === 0 && showReplies) {
-      loading = true;
-      const res = await api.get(`/replies/${id}/`);
-      replies = res.data;
-      loading = false;
+      fetchReplies();
     }
   };
-  $: showReplies, fetchReplies();
+  $: showReplies, handleReplyFetch();
 
   const postReply = async () => {
     await api.post(`/replies/`, {
@@ -45,12 +55,34 @@
 </script>
 
 <Collapse open={showReplies}>
+  {#if replies.length < replyCount}
+    <Center>
+      <Button
+        variant="subtle"
+        on:click={() => {
+          replyPage++;
+          fetchReplies(true);
+        }}
+      >
+        Exibir respostas mais antigas
+      </Button>
+    </Center>
+  {/if}
   {#if replies.length > 0 && !loading}
     {#each replies as reply (reply.id)}
-      <Reply {...reply} {userId} on:delete={fetchReplies} />
+      <Reply
+        {...reply}
+        {userId}
+        on:delete={() => {
+          fetchReplies();
+          dispatch("replyDeleted");
+        }}
+      />
     {/each}
   {:else if loading}
-    <Loader />
+    <Center>
+      <Loader />
+    </Center>
   {:else}
     <Center>
       <Text>Não há respostas.</Text>
@@ -67,7 +99,14 @@
       >
         Cancelar
       </Button>
-      <Button on:click={postReply}>Publicar</Button>
+      <Button
+        on:click={() => {
+          postReply();
+          dispatch("newReply");
+        }}
+      >
+        Publicar
+      </Button>
     </div>
   </div>
 </Collapse>

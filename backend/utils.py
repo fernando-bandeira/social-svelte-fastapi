@@ -100,6 +100,8 @@ def generate_post_payload(post, user_id, author, db):
 
     repost_count = db.query(models.Post).filter(models.Post.reference == post.id).count()
 
+    reply_count = db.query(models.PostReply).filter(models.PostReply.post == post.id).count()
+
     payload = {
         'id': post.id,
         'author': {
@@ -113,7 +115,8 @@ def generate_post_payload(post, user_id, author, db):
         'tags': tags,
         'likeCount': like_count,
         'liked': bool(liked),
-        'repostCount': repost_count
+        'repostCount': repost_count,
+        'replyCount': reply_count
     }
     if post.repost:
         original_author = db.query(models.User).filter(models.User.id == original_post.author).first()

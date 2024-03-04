@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 import models
 from utils import verify_authorization
+from sqlalchemy import desc
+
 router = APIRouter()
 
 
@@ -26,8 +28,8 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-@router.get('/{post_id}/')
-def get_replies(post_id: int, db: db_dependency, authorization: str = Header(None)):
+@router.get('/count/{post_id}/')
+def get_replies_qty(post_id: int, db: db_dependency, authorization: str = Header(None)):
     user_id = db.query(models.Post).filter(models.Post.id == post_id).first().author
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user.public:
@@ -37,7 +39,26 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
 
     replies = db.query(models.PostReply).filter(
         models.PostReply.post == post_id
-    ).all()
+    ).count()
+    return {
+        'count': replies
+    }
+
+
+@router.get('/{post_id}/')
+def get_replies(post_id: int, db: db_dependency, authorization: str = Header(None), page: int = 1):
+    user_id = db.query(models.Post).filter(models.Post.id == post_id).first().author
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user.public:
+        verify_authorization(authorization, followers_of=user_id, db=db)
+    else:
+        verify_authorization(authorization, allow_all=True)
+
+    PAGE_SIZE = 2
+    offset = (page - 1) * PAGE_SIZE
+    replies = db.query(models.PostReply).filter(
+        models.PostReply.post == post_id
+    ).order_by(desc(models.PostReply.id)).offset(offset).limit(PAGE_SIZE).all()
     response_payload = []
     for reply in replies:
         author = db.query(models.User).filter(models.User.id == reply.author).first()
@@ -50,7 +71,7 @@ def get_replies(post_id: int, db: db_dependency, authorization: str = Header(Non
             'content': reply.content,
             'date': reply.date,
         })
-    return response_payload
+    return response_payload[::-1]
 
 
 @router.post('/')

@@ -36,6 +36,7 @@
   export let likeCount;
   export let liked;
   export let repostCount;
+  export let replyCount;
 
   let showReplies = false;
 
@@ -61,7 +62,11 @@
     liked = resLiked.data.like;
     const resCount = await api.get(`/likes/post/${id}/`);
     likeCount = resCount.data.count;
-    loadingLikeFetch = false;
+  };
+
+  const fetchReplies = async () => {
+    const red = await api.get(`/replies/count/${id}/`);
+    replyCount = red.data.count;
   };
 
   const handleLike = async () => {
@@ -241,13 +246,17 @@
         >
           <ChatBubble color="#228BE6" size={20} />
         </ActionIcon>
+        <Text>{replyCount}</Text>
       </div>
     </div>
     <ReplySection
       {id}
       {userId}
       {showReplies}
+      {replyCount}
       on:close={() => (showReplies = false)}
+      on:newReply={fetchReplies}
+      on:replyDeleted={fetchReplies}
     />
   </Paper>
 </div>
