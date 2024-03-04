@@ -102,7 +102,7 @@ def get_feed_posts(user_id: int, db: db_dependency, authorization: str = Header(
     ).filter(
         models.FollowRelation.requester == user_id,
         models.FollowRelation.approved
-    ).order_by(desc(models.Post.date)).all()
+    ).order_by(desc(models.Post.id)).all()
 
     response_payload = []
     for post in followed_users_posts:
