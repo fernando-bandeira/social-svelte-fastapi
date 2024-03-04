@@ -7,6 +7,7 @@
     Center,
     Loader,
   } from "@svelteuidev/core";
+  import { focus } from "@svelteuidev/composables";
   import api from "../utils/api";
   import Reply from "./Reply.svelte";
   import { createEventDispatcher } from "svelte";
@@ -89,7 +90,7 @@
     </Center>
   {/if}
   <div id="reply-section">
-    <Textarea autofocus bind:value={reply} />
+    <Textarea bind:value={reply} use={[[focus]]} />
     <div id="reply-buttons">
       <Button
         color="red"
