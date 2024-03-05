@@ -9,8 +9,9 @@
     Paper,
     Checkbox,
     Text,
+    Alert,
   } from "@svelteuidev/core";
-  import { EnvelopeClosed } from "radix-icons-svelte";
+  import { Check, Cross2, EnvelopeClosed } from "radix-icons-svelte";
 
   const apiBase = import.meta.env.VITE_API_PATH;
 
@@ -19,24 +20,54 @@
   let password;
   let publicProfile;
 
-  const login = () => {
-    axios
-      .post(apiBase + "register/", {
+  let showSuccessMessage = false;
+  let showErrorMessage = false;
+  let alertMessage;
+
+  const handleAlert = (isError, msg) => {
+    alertMessage = msg;
+    showErrorMessage = isError;
+    showSuccessMessage = !isError;
+    setTimeout(() => {
+      showErrorMessage = false;
+      showSuccessMessage = false;
+    }, 5000);
+  };
+
+  const register = async () => {
+    try {
+      const res = await axios.post(apiBase + "register/", {
         name: name,
         email: email,
         password: password,
         public: publicProfile,
-      })
-      .then((res) => {
-        goto("/login");
       });
+      goto("/login");
+    } catch (err) {
+      handleAlert(true, "Erro ao registrar usuário.");
+    }
   };
 </script>
 
 <LoginWrapper>
+  <div style="position: fixed; bottom: 40px; right: 20px">
+    {#if showSuccessMessage || showErrorMessage}
+      <Alert
+        color={showSuccessMessage ? "teal" : "red"}
+        icon={showSuccessMessage ? Check : Cross2}
+        withCloseButton
+        on:close={() => {
+          showSuccessMessage = false;
+          showErrorMessage = false;
+        }}
+      >
+        {alertMessage}
+      </Alert>
+    {/if}
+  </div>
   <div id="box">
     <Paper>
-      <form on:submit={login}>
+      <form on:submit={register}>
         <Text><label for="name">Nome:</label></Text>
         <TextInput bind:value={name} id="name" placeholder="Fulano de Tal" />
         <br />

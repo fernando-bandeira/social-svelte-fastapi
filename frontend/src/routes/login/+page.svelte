@@ -9,33 +9,64 @@
     Button,
     Paper,
     Text,
+    Alert,
   } from "@svelteuidev/core";
-  import { EnvelopeClosed } from "radix-icons-svelte";
+  import { Check, Cross2, EnvelopeClosed } from "radix-icons-svelte";
 
   const apiBase = import.meta.env.VITE_API_PATH;
 
   let email;
   let password;
 
-  const login = () => {
-    axios
-      .post(apiBase + "login/", {
+  let showSuccessMessage = false;
+  let showErrorMessage = false;
+  let alertMessage;
+
+  const handleAlert = (isError, msg) => {
+    alertMessage = msg;
+    showErrorMessage = isError;
+    showSuccessMessage = !isError;
+    setTimeout(() => {
+      showErrorMessage = false;
+      showSuccessMessage = false;
+    }, 5000);
+  };
+
+  const login = async () => {
+    try {
+      const res = await axios.post(apiBase + "login/", {
         email: email,
         password: password,
-      })
-      .then((res) => {
-        localStorage.setItem("access", res.data.access);
-        localStorage.setItem("refresh", res.data.refresh);
-        userContext.set({
-          id: res.data.user_id,
-          email: res.data.user_email,
-        });
-        goto("/");
       });
+      localStorage.setItem("access", res.data.access);
+      localStorage.setItem("refresh", res.data.refresh);
+      userContext.set({
+        id: res.data.user_id,
+        email: res.data.user_email,
+      });
+      goto("/");
+    } catch (err) {
+      handleAlert(true, "Erro ao autenticar.");
+    }
   };
 </script>
 
 <LoginWrapper>
+  <div style="position: fixed; bottom: 40px; right: 20px">
+    {#if showSuccessMessage || showErrorMessage}
+      <Alert
+        color={showSuccessMessage ? "teal" : "red"}
+        icon={showSuccessMessage ? Check : Cross2}
+        withCloseButton
+        on:close={() => {
+          showSuccessMessage = false;
+          showErrorMessage = false;
+        }}
+      >
+        {alertMessage}
+      </Alert>
+    {/if}
+  </div>
   <div id="box">
     <Paper>
       <form on:submit={login}>
