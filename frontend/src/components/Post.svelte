@@ -139,125 +139,135 @@
     {/if}
   </div>
   <Paper>
-    <div id="post-info">
-      <div style="width: 100%">
-        {#if repost}
-          <div id="repost-title">
-            <Update />
-            <Text>
-              <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
-              <a href={`/profile/${author.original.id}/`}>
-                {author.original.name}
-              </a>
-              em {date}
-            </Text>
-          </div>
-        {:else}
-          <Text>
-            <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
-            {#if edited}
-              (Editado)
-            {/if}
-          </Text>
-        {/if}
-        <br />
-        {#if editing}
-          <div id="edit-section">
-            <Textarea bind:value={editedContent} use={[[focus]]} />
-            <div id="edit-actions">
-              <Button
-                color="red"
-                on:click={() => {
-                  editing = false;
-                  editedContent = content;
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                disabled={editedContent === content}
-                on:click={() => {
-                  editing = false;
-                  updatePost();
-                }}
-              >
-                Salvar
-              </Button>
+    <div style="position: relative;">
+      <div id="post-info">
+        <div style="width: 100%">
+          {#if repost}
+            <div id="repost-title">
+              <Update />
+              <Text>
+                <a href={`/profile/${author.id}/`}>{author.name}</a> repostou de
+                <a href={`/profile/${author.original.id}/`}>
+                  {author.original.name}
+                </a>
+                em {date}
+              </Text>
             </div>
-          </div>
-        {:else}
-          {#key content}
-            <Text><ProcessedPost {tags} {content} /></Text>
-          {/key}
-        {/if}
-        <br />
-      </div>
-      {#if userId === author.id}
-        <Menu>
-          {#if !repost}
-            <Menu.Item
-              on:click={() => {
-                editedContent = editedContent.replace(
-                  /@([^@]+)@/g,
-                  (_, tagId) => {
-                    const name = tags.find((tag) => tag.id == tagId)?.name;
-                    return "@" + name + "@";
-                  },
-                );
-                editing = true;
-              }}
-              disabled={editing}
-              icon={Pencil1}
-            >
-              Editar
-            </Menu.Item>
-          {/if}
-          <Menu.Item color="red" icon={Trash} on:click={deletePost}>
-            Excluir
-          </Menu.Item>
-        </Menu>
-      {/if}
-    </div>
-    <hr />
-    <div id="action-group">
-      <div class="action">
-        <ActionIcon variant="hover" color="#228BE625" on:click={handleLike}>
-          {#if liked}
-            <HeartFilled color="#228BE6" size={25} />
           {:else}
-            <Heart color="#228BE6" size={25} />
+            <Text>
+              <a href={`/profile/${author.id}/`}>{author.name}</a> em {date}
+              {#if edited}
+                (Editado)
+              {/if}
+            </Text>
           {/if}
-        </ActionIcon>
-        <Text>{likeCount}</Text>
-      </div>
-      {#if !repost}
-        <div class="action">
-          <ActionIcon variant="hover" color="#228BE625" on:click={handleRepost}>
-            <Update color="#228BE6" size={20} />
-          </ActionIcon>
-          <Text>{repostCount}</Text>
+          <br />
+          {#if editing}
+            <div id="edit-section">
+              <Textarea bind:value={editedContent} use={[[focus]]} />
+              <div id="edit-actions">
+                <Button
+                  color="red"
+                  on:click={() => {
+                    editing = false;
+                    editedContent = content;
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  disabled={editedContent === content}
+                  on:click={() => {
+                    editing = false;
+                    updatePost();
+                  }}
+                >
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          {:else}
+            {#key content}
+              <div style="word-wrap: break-word">
+                <Text><ProcessedPost {tags} {content} /></Text>
+              </div>
+            {/key}
+          {/if}
+          <br />
         </div>
-      {/if}
-      <div class="action">
-        <ActionIcon
-          variant="hover"
-          color="#228BE625"
-          on:click={() => (showReplies = !showReplies)}
-        >
-          <ChatBubble color="#228BE6" size={20} />
-        </ActionIcon>
-        <Text>{replyCount}</Text>
+        {#if userId === author.id}
+          <div style="position: absolute; right: 5px; top: 5px;">
+            <Menu>
+              {#if !repost}
+                <Menu.Item
+                  on:click={() => {
+                    editedContent = editedContent.replace(
+                      /@([^@]+)@/g,
+                      (_, tagId) => {
+                        const name = tags.find((tag) => tag.id == tagId)?.name;
+                        return "@" + name + "@";
+                      },
+                    );
+                    editing = true;
+                  }}
+                  disabled={editing}
+                  icon={Pencil1}
+                >
+                  Editar
+                </Menu.Item>
+              {/if}
+              <Menu.Item color="red" icon={Trash} on:click={deletePost}>
+                Excluir
+              </Menu.Item>
+            </Menu>
+          </div>
+        {/if}
       </div>
+      <hr />
+      <div id="action-group">
+        <div class="action">
+          <ActionIcon variant="hover" color="#228BE625" on:click={handleLike}>
+            {#if liked}
+              <HeartFilled color="#228BE6" size={25} />
+            {:else}
+              <Heart color="#228BE6" size={25} />
+            {/if}
+          </ActionIcon>
+          <Text>{likeCount}</Text>
+        </div>
+        {#if !repost}
+          <div class="action">
+            <ActionIcon
+              variant="hover"
+              color="#228BE625"
+              on:click={handleRepost}
+            >
+              <Update color="#228BE6" size={20} />
+            </ActionIcon>
+            <Text>{repostCount}</Text>
+          </div>
+        {/if}
+        <div class="action">
+          <ActionIcon
+            variant="hover"
+            color="#228BE625"
+            on:click={() => (showReplies = !showReplies)}
+          >
+            <ChatBubble color="#228BE6" size={20} />
+          </ActionIcon>
+          <Text>{replyCount}</Text>
+        </div>
+      </div>
+      <ReplySection
+        {id}
+        {userId}
+        {showReplies}
+        {replyCount}
+        on:close={() => (showReplies = false)}
+        on:newReply={fetchReplies}
+        on:replyDeleted={fetchReplies}
+      />
     </div>
-    <ReplySection
-      {id}
-      {userId}
-      {showReplies}
-      {replyCount}
-      on:close={() => (showReplies = false)}
-      on:newReply={fetchReplies}
-      on:replyDeleted={fetchReplies}
-    />
   </Paper>
 </div>
 
