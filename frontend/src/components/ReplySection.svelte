@@ -56,7 +56,7 @@
 </script>
 
 <Collapse open={showReplies}>
-  {#if replies.length < replyCount}
+  {#if replies.length < replyCount && !loading}
     <Center>
       <Button
         variant="subtle"
