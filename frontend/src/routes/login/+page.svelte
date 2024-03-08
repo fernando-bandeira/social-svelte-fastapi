@@ -69,20 +69,18 @@
   </div>
   <div id="box">
     <Paper>
-      <form on:submit={login}>
-        <Text><label for="email">E-mail:</label></Text>
-        <TextInput bind:value={email} icon={EnvelopeClosed} id="email" />
-        <br />
-        <Text><label for="password">Senha:</label></Text>
-        <PasswordInput bind:value={password} id="password" />
-        <br />
-        <div id="actions">
-          <Button type="submit">Entrar</Button>
-          <Text>
-            <a href="/register">Criar conta</a>
-          </Text>
-        </div>
-      </form>
+      <Text><label for="email">E-mail:</label></Text>
+      <TextInput bind:value={email} icon={EnvelopeClosed} id="email" />
+      <br />
+      <Text><label for="password">Senha:</label></Text>
+      <PasswordInput bind:value={password} id="password" />
+      <br />
+      <div id="actions">
+        <Button on:click={login}>Entrar</Button>
+        <Text>
+          <a href="/register">Criar conta</a>
+        </Text>
+      </div>
     </Paper>
   </div>
 </LoginWrapper>

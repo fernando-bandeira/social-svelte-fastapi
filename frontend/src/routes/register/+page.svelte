@@ -67,39 +67,33 @@
   </div>
   <div id="box">
     <Paper>
-      <form on:submit={register}>
-        <Text><label for="name">Nome:</label></Text>
-        <TextInput bind:value={name} id="name" placeholder="Fulano de Tal" />
-        <br />
-        <Text><label for="email">E-mail:</label></Text>
-        <TextInput
-          bind:value={email}
-          icon={EnvelopeClosed}
-          id="email"
-          placeholder="fulano@email.com"
-        />
-        <br />
-        <Text><label for="password">Senha:</label></Text>
-        <PasswordInput
-          bind:value={password}
-          id="password"
-          placeholder="******"
-        />
-        <br />
-        <div id="public-section">
-          <Checkbox bind:checked={publicProfile} id="public" />
-          <Text>
-            <label for="public">Perfil público</label>
-          </Text>
-        </div>
-        <br />
-        <div id="actions">
-          <Button type="submit">Registrar</Button>
-          <Text>
-            <a href="/login">Já possuo uma conta</a>
-          </Text>
-        </div>
-      </form>
+      <Text><label for="name">Nome:</label></Text>
+      <TextInput bind:value={name} id="name" placeholder="Fulano de Tal" />
+      <br />
+      <Text><label for="email">E-mail:</label></Text>
+      <TextInput
+        bind:value={email}
+        icon={EnvelopeClosed}
+        id="email"
+        placeholder="fulano@email.com"
+      />
+      <br />
+      <Text><label for="password">Senha:</label></Text>
+      <PasswordInput bind:value={password} id="password" placeholder="******" />
+      <br />
+      <div id="public-section">
+        <Checkbox bind:checked={publicProfile} id="public" />
+        <Text>
+          <label for="public">Perfil público</label>
+        </Text>
+      </div>
+      <br />
+      <div id="actions">
+        <Button on:click={register}>Registrar</Button>
+        <Text>
+          <a href="/login">Já possuo uma conta</a>
+        </Text>
+      </div>
     </Paper>
   </div>
 </LoginWrapper>
